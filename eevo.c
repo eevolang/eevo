@@ -52,7 +52,8 @@ struct Eevo_ eevo_void = { .t = EEVO_VOID };
 static void rec_add(EevoRec rec, char *key, Eevo val);
 static Eevo eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args);
 
-/* utility functions */
+
+/*** Utilities ***/
 
 /* return type of eevo value */
 static Eevo
@@ -302,7 +303,7 @@ rec_extend(EevoRec next, Eevo args, Eevo vals)
 	return ret;
 }
 
-/* make types */
+/*** Type Constructors ***/
 
 Eevo
 eevo_val(EevoType t)
@@ -454,7 +455,7 @@ eevo_list(EevoSt st, int n, ...)
 	return lst;
 }
 
-/* read */
+/*** Read ***/
 
 /* read first character of number to determine sign */
 static int
@@ -779,7 +780,7 @@ eevo_read_line(EevoSt st, int level)
 	return nilp(rst(ret)) ? fst(ret) : ret; /* if only 1 element in list, return just it */
 }
 
-/* eval */
+/*** Evaluate ***/
 
 /* evaluate each element of list */
 /* TODO arg for eevo_eval or expand_macro */
@@ -905,7 +906,7 @@ eevo_eval(EevoSt st, EevoRec env, Eevo v)
 	}
 }
 
-/* print */
+/*** Print ***/
 
 /* determine size of string to be printed */
 size_t
@@ -1022,7 +1023,7 @@ eevo_print(Eevo v)
 }
 
 
-/* environment */
+/*** Environment ***/
 
 /* add new variable of name key and value v to the given environment */
 void

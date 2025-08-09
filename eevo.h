@@ -24,56 +24,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/* Global literals */
-extern struct Eevo_ eevo_nil;
-extern struct Eevo_ eevo_true;
-extern struct Eevo_ eevo_void;
-
-#define EEVO_REC_FACTOR 2
+/*** Configuration ***/
 
 #define EEVO_OP_CHARS "_+-*/\\|=^<>.:"
 #define EEVO_SYM_CHARS "_!?" "@#$%&~" "*-"
 
-#define eevo_warnf(M, ...) do {                                    \
-	fprintf(stderr, "; eevo: error: " M "\n", ##__VA_ARGS__); \
-	return NULL;                                              \
-} while(0)
-#define eevo_warn(M) do {                           \
-	fprintf(stderr, "; eevo: error: " M "\n"); \
-	return NULL;                               \
-} while(0)
+#define EEVO_REC_FACTOR 2
 
-/* TODO test general condition */
-#define eevo_arg_min(ARGS, NAME, NARGS) do {                                      \
-	if (eevo_lstlen(ARGS) < NARGS)                                            \
-		eevo_warnf("%s: expected at least %d argument%s, received %d",    \
-		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS)); \
-} while(0)
-#define eevo_arg_max(ARGS, NAME, NARGS) do {                                          \
-	if (eevo_lstlen(ARGS) > NARGS)                                                \
-		eevo_warnf("%s: expected at no more than %d argument%s, received %d", \
-		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS));     \
-} while(0)
-#define eevo_arg_num(ARGS, NAME, NARGS) do {                                      \
-	if (NARGS > -1 && eevo_lstlen(ARGS) != NARGS)                             \
-		eevo_warnf("%s: expected %d argument%s, received %d",             \
-		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS)); \
-} while(0)
-#define eevo_arg_type(ARG, NAME, TYPE) do {                                     \
-	if (!(ARG->t & (TYPE)))                                                \
-		eevo_warnf(NAME ": expected %s, received %s",                   \
-		                eevo_type_str(TYPE), eevo_type_str(ARG->t));     \
-} while(0)
+/*** Global Literals ***/
 
-#define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_PRIM, prim_##FN, #NAME))
-#define eevo_env_prim(NAME)          eevo_env_name_prim(NAME, NAME)
-#define eevo_env_name_form(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_FORM, form_##FN, #NAME))
-#define eevo_env_form(NAME)          eevo_env_name_form(NAME, NAME)
+extern struct Eevo_ eevo_nil;
+extern struct Eevo_ eevo_true;
+extern struct Eevo_ eevo_void;
 
-#define eevo_fgetat(ST, O) ST->file[ST->filec+O]
-#define eevo_fget(ST) eevo_fgetat(ST,0)
-#define eevo_finc(ST) ST->filec++
-#define eevo_fincn(ST, N) ST->filec += N
+/*** Types ***/
 
 struct Eevo_;
 typedef struct Eevo_ *Eevo;
@@ -152,6 +116,51 @@ struct EevoSt_ {
 	size_t libhc;
 };
 
+/*** Macro Functions ***/
+
+#define eevo_warnf(M, ...) do {                                    \
+	fprintf(stderr, "; eevo: error: " M "\n", ##__VA_ARGS__); \
+	return NULL;                                              \
+} while(0)
+#define eevo_warn(M) do {                           \
+	fprintf(stderr, "; eevo: error: " M "\n"); \
+	return NULL;                               \
+} while(0)
+
+/* TODO test general condition */
+#define eevo_arg_min(ARGS, NAME, NARGS) do {                                      \
+	if (eevo_lstlen(ARGS) < NARGS)                                            \
+		eevo_warnf("%s: expected at least %d argument%s, received %d",    \
+		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS)); \
+} while(0)
+#define eevo_arg_max(ARGS, NAME, NARGS) do {                                          \
+	if (eevo_lstlen(ARGS) > NARGS)                                                \
+		eevo_warnf("%s: expected at no more than %d argument%s, received %d", \
+		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS));     \
+} while(0)
+#define eevo_arg_num(ARGS, NAME, NARGS) do {                                      \
+	if (NARGS > -1 && eevo_lstlen(ARGS) != NARGS)                             \
+		eevo_warnf("%s: expected %d argument%s, received %d",             \
+		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS)); \
+} while(0)
+#define eevo_arg_type(ARG, NAME, TYPE) do {                                     \
+	if (!(ARG->t & (TYPE)))                                                \
+		eevo_warnf(NAME ": expected %s, received %s",                   \
+		                eevo_type_str(TYPE), eevo_type_str(ARG->t));     \
+} while(0)
+
+#define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_PRIM, prim_##FN, #NAME))
+#define eevo_env_prim(NAME)          eevo_env_name_prim(NAME, NAME)
+#define eevo_env_name_form(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_FORM, form_##FN, #NAME))
+#define eevo_env_form(NAME)          eevo_env_name_form(NAME, NAME)
+
+#define eevo_fgetat(ST, O) ST->file[ST->filec+O]
+#define eevo_fget(ST) eevo_fgetat(ST,0)
+#define eevo_finc(ST) ST->filec++
+#define eevo_fincn(ST, N) ST->filec += N
+
+/*** Function Declarations ***/
+
 char *eevo_type_str(EevoType t);
 int eevo_lstlen(Eevo v);
 
@@ -184,4 +193,5 @@ void eevo_env_string(EevoSt);
 void eevo_env_math(EevoSt);
 void eevo_env_io(EevoSt);
 void eevo_env_os(EevoSt);
+
 #endif // EEVO_H
