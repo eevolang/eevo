@@ -82,7 +82,37 @@ def docstr-reg
       "Perform interpolation on explicit string"
       "  Evaluate expression inside curly braces"
       "  Double curly braces are not evaluated, inserting a single one."
-      "  Equivalent to strfmt(\"str\")"))
+      "  Equivalent to strfmt(\"str\")")
+    (write
+      "write(file append? ... vals)"
+      "Write all values to file"
+      "  File can be file path give as string or the symbols 'stdout or 'stderr"
+      "  Append file if append? is true, otherwise override")
+    (read
+      "read(... file)"
+      "Return string read from file, or stdin if no file is provided")
+    (parse
+      "parse(string)"
+      "Parse eevo value from given string")
+    (load
+      "load(lib)"
+      "Loads the library given as a string")
+    (cd!
+      "cd!(dir)"
+      "Change directory")
+    (pwd
+      "pwd()"
+      "String of current working directory")
+    (exit!
+      "exit!(status)"
+      "Exit program with status code of given integer"
+      "  Zero for success, non-zero for failure")
+    (now
+      "now()"
+      "Number of seconds since 1970 (unix time stamp)")
+    (time
+      "time(expr)"
+      "Time in milliseconds it took to run expression"))
 
 ; TODO print func args even if no docstr
 def doc(proc)

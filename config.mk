@@ -3,7 +3,7 @@ VERSION = 0.1
 
 # core modules to include
 CORE = core/core.c core/string.c core/math.c core/io.c core/os.c
-EVO = core/core.evo core/list.evo core/doc.evo core/io.evo core/math.evo core/os.evo
+EVO = core/core.evo core/list.evo core/doc.evo core/io.evo core/math.evo
 
 # paths
 PREFIX = /usr/local
