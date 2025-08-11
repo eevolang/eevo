@@ -1107,5 +1107,5 @@ eevo_env_lib(EevoSt st, char* lib)
 #include "core/core.c"
 #include "core/string.c"
 #include "core/math.c"
-#include "core/io.c"
-#include "core/os.c"
+#include "std/io.c"
+#include "std/os.c"
