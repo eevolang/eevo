@@ -177,8 +177,7 @@ prim_load(EevoSt st, EevoRec env, Eevo args)
 
 	/* If not eevo file, try loading shared object library */
 	memset(name, 0, sizeof(name));
-	strcpy(name, "libtib");
-	strcat(name, tib->v.s);
+	strcpy(name, tib->v.s);
 	strcat(name, ".so");
 	if (!(libh = dlopen(name, RTLD_LAZY)))
 		eevo_warnf("load: could not load '%s':\n; %s", tib->v.s, dlerror());
