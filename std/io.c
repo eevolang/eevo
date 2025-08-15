@@ -152,6 +152,7 @@ static Eevo
 prim_load(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo tib;
+	void *libh;
 	void (*tibenv)(EevoSt);
 	char name[PATH_MAX];
 	const char *paths[] = {
@@ -175,26 +176,22 @@ prim_load(EevoSt st, EevoRec env, Eevo args)
 	}
 
 	/* If not eevo file, try loading shared object library */
-	if (!(st->libh = realloc(st->libh, (st->libhc+1)*sizeof(void*))))
-		perror("; realloc"), exit(1);
-
 	memset(name, 0, sizeof(name));
 	strcpy(name, "libtib");
 	strcat(name, tib->v.s);
 	strcat(name, ".so");
-	if (!(st->libh[st->libhc] = dlopen(name, RTLD_LAZY)))
+	if (!(libh = dlopen(name, RTLD_LAZY)))
 		eevo_warnf("load: could not load '%s':\n; %s", tib->v.s, dlerror());
 	dlerror();
 
 	memset(name, 0, sizeof(name));
 	strcpy(name, "eevo_env_");
 	strcat(name, tib->v.s);
-	tibenv = dlsym(st->libh[st->libhc], name);
+	tibenv = dlsym(libh, name);
 	if (dlerror())
 		eevo_warnf("load: could not run '%s':\n; %s", tib->v.s, dlerror());
 	(*tibenv)(st);
 
-	st->libhc++;
 	return Void;
 }
 

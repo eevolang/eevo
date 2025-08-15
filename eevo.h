@@ -112,8 +112,6 @@ struct EevoSt_ {
 	size_t filec;
 	Eevo types[14];
 	EevoRec env, strs, syms;
-	void **libh;
-	size_t libhc;
 };
 
 /*** Macro Functions ***/

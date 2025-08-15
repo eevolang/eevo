@@ -1076,9 +1076,6 @@ eevo_env_init(size_t cap)
 		eevo_env_add(st, st->types[i]->v.t.name, st->types[i]);
 		/* TODO define type predicate functions here (nil?, string?, etc) */
 
-	st->libh = NULL;
-	st->libhc = 0;
-
 	/* eevo_env_lib(st, libs); */
 
 	return st;
