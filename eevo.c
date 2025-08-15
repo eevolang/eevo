@@ -807,7 +807,7 @@ Eevo
 eevo_eval_body(EevoSt st, EevoRec env, Eevo body)
 {
 	Eevo ret = Void;
-	for (; body->t == EEVO_PAIR; body = rst(body))
+	while (body->t == EEVO_PAIR) {
 		if (nilp(rst(body)) && fst(body)->t == EEVO_PAIR) { /* func call is last, do tail call */
 			Eevo f, args;
 			if (!(f = eevo_eval(st, env, ffst(body))))
@@ -821,9 +821,12 @@ eevo_eval_body(EevoSt st, EevoRec env, Eevo body)
 			if (!(env = rec_extend(f->v.f.env, f->v.f.args, args)))
 				return NULL;
 			/* continue loop from body of func call */
-			body = eevo_pair(NULL, f->v.f.body);
+			body = f->v.f.body;
+			continue;
 		} else if (!(ret = eevo_eval(st, env, fst(body))))
 			return NULL;
+		body = rst(body);
+	}
 	return ret;
 }
 
