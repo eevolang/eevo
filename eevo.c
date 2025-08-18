@@ -897,9 +897,11 @@ eevo_eval(EevoSt st, EevoRec env, Eevo v)
 	Eevo f;
 	switch (v->t) {
 	case EEVO_SYM:
-		if (!(f = rec_get(env, v->v.s)))
-			eevo_warnf("could not find symbol '%s'", v->v.s);
-		return f;
+		if ((f = rec_get(env, v->v.s)))
+			return f;
+		if (v == eevo_sym(st, "ENV"))
+			return eevo_rec(st, env, NULL);
+		eevo_warnf("could not find symbol '%s'", v->v.s);
 	case EEVO_PAIR:
 		if (!(f = eevo_eval(st, env, fst(v))))
 			return NULL;
