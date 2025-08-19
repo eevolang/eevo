@@ -169,7 +169,7 @@ Eevo eevo_str(EevoSt st, char *s);
 Eevo eevo_sym(EevoSt st, char *s);
 Eevo eevo_prim(EevoType t, EevoPrim prim, char *name);
 Eevo eevo_func(EevoType t, char *name, Eevo args, Eevo body, EevoRec env);
-Eevo eevo_rec(EevoSt st, EevoRec prev, Eevo records);
+Eevo eevo_rec(EevoSt st, EevoRec prev, const Eevo records);
 Eevo eevo_pair(Eevo a, Eevo b);
 Eevo eevo_list(EevoSt st, int n, ...);
 
@@ -177,12 +177,12 @@ Eevo eevo_read_sexpr(EevoSt st);
 Eevo eevo_read(EevoSt st);
 Eevo eevo_read_sugar(EevoSt st, Eevo v);
 Eevo eevo_read_line(EevoSt st, int level);
-Eevo eevo_eval_list(EevoSt st, EevoRec env, Eevo v);
+Eevo eevo_eval_list(EevoSt st, const EevoRec env, Eevo v);
 Eevo eevo_eval_body(EevoSt st, EevoRec env, Eevo v);
-Eevo eevo_eval(EevoSt st, EevoRec env, Eevo v);
-char *eevo_print(Eevo v);
+Eevo eevo_eval(EevoSt st, const EevoRec env, const Eevo v);
+char *eevo_print(const Eevo v);
 
-void   eevo_env_add(EevoSt st, char *key, Eevo v);
+void   eevo_env_add(EevoSt st, char *key, const Eevo v);
 EevoSt eevo_env_init(size_t cap);
 Eevo   eevo_env_lib(EevoSt st, char* lib);
 

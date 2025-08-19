@@ -49,7 +49,7 @@ struct Eevo_ eevo_void = { .t = EEVO_VOID };
 #define LEN(X)            (sizeof(X) / sizeof((X)[0]))
 
 /* functions */
-static void rec_add(EevoRec rec, char *key, Eevo val);
+static void rec_add(EevoRec rec, char *key, const Eevo val);
 static Eevo eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args);
 
 
@@ -57,7 +57,7 @@ static Eevo eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args);
 
 /* return type of eevo value */
 static Eevo
-eevo_typeof(EevoSt st, EevoRec env, Eevo args)
+eevo_typeof(const EevoSt st, const EevoRec env, const Eevo args)
 {
 	eevo_arg_num(args, "Type", 1);
 	int id = 0;
@@ -121,7 +121,7 @@ is_op(char c)
 /* TODO only if -/+ is not followed by a delim */
 /* TODO use XOR '0' < 10 */
 static int
-isnum(char *str)
+isnum(const char *str)
 {
 	return isdigit(*str) || (*str == '.' &&  isdigit(str[1])) ||
 	       ((*str == '-' || *str == '+') && (isdigit(str[1]) || str[1] == '.'));
@@ -156,7 +156,7 @@ eevo_lstlen(Eevo v)
 
 /* check if two values are equal */
 static int
-vals_eq(Eevo a, Eevo b)
+vals_eq(const Eevo a, const Eevo b)
 {
 	if (a->t & EEVO_NUM && b->t & EEVO_NUM) { /* NUMBERs */
 		if (num(a) != num(b) || den(a) != den(b))
@@ -194,7 +194,7 @@ frac_reduce(int *num, int *den)
 
 /* return hashed number based on key */
 static uint32_t
-hash(char *key)
+hash(const char *key)
 {
 	uint32_t h = 0;
 	char c;
@@ -205,7 +205,7 @@ hash(char *key)
 
 /* create new empty rec with given capacity */
 static EevoRec
-rec_new(size_t cap, EevoRec next)
+rec_new(size_t cap, const EevoRec next)
 {
 	EevoRec rec;
 	if (!(rec = malloc(sizeof(struct EevoRec_))))
@@ -220,7 +220,7 @@ rec_new(size_t cap, EevoRec next)
 
 /* get entry in one record for the key */
 static EevoEntry
-entry_get(EevoRec rec, char *key)
+entry_get(EevoRec rec, const char *key)
 {
 	int i = hash(key) % rec->cap;
 	char *s;
@@ -236,7 +236,7 @@ entry_get(EevoRec rec, char *key)
 
 /* get value of given key in each record */
 static Eevo
-rec_get(EevoRec rec, char *key)
+rec_get(EevoRec rec, const char *key)
 {
 	EevoEntry e;
 	for (; rec; rec = rec->next) {
@@ -264,7 +264,7 @@ rec_grow(EevoRec rec)
 
 /* create new key and value pair to the record */
 static void
-rec_add(EevoRec rec, char *key, Eevo val)
+rec_add(EevoRec rec, char *key, const Eevo val)
 {
 	EevoEntry e = entry_get(rec, key);
 	e->val = val;
@@ -410,7 +410,7 @@ eevo_func(EevoType t, char *name, Eevo args, Eevo body, EevoRec env)
 
 /* TODO swap eevo_rec and rec_new */
 Eevo
-eevo_rec(EevoSt st, EevoRec prev, Eevo records)
+eevo_rec(EevoSt st, EevoRec prev, const Eevo records)
 {
 	int cap;
 	Eevo v, ret = eevo_val(EEVO_REC);
@@ -561,7 +561,7 @@ esc_char(char c)
 
 /* replace all encoded escape characters in string with their actual character */
 static char *
-esc_str(char *s, int len, int do_esc)
+esc_str(const char *s, int len, int do_esc)
 {
 	char *pos, *ret;
 	if (!(ret = malloc((len+1) * sizeof(char))))
@@ -710,7 +710,7 @@ eevo_read(EevoSt st)
 
 /* read extra syntax sugar on top of s-expressions */
 Eevo
-eevo_read_sugar(EevoSt st, Eevo v)
+eevo_read_sugar(EevoSt st, const Eevo v)
 {
 	Eevo lst, w;
 	if (eevo_fget(st) == '(') { /* func(x y) => (func x y) */
@@ -784,8 +784,9 @@ eevo_read_line(EevoSt st, int level)
 
 /* evaluate each element of list */
 /* TODO arg for eevo_eval or expand_macro */
+/* TODO result list in args so can be given pointer to the same list to modify in place? */
 Eevo
-eevo_eval_list(EevoSt st, EevoRec env, Eevo v)
+eevo_eval_list(EevoSt st, const EevoRec env, Eevo v)
 {
 	Eevo ret = eevo_pair(NULL, Nil), ev;
 	for (Eevo cur = ret; !nilp(v); v = rst(v), cur = rst(cur)) {
@@ -892,7 +893,7 @@ eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args)
 
 /* evaluate given value */
 Eevo
-eevo_eval(EevoSt st, EevoRec env, Eevo v)
+eevo_eval(EevoSt st, const EevoRec env, const Eevo v)
 {
 	Eevo f;
 	switch (v->t) {
@@ -915,7 +916,7 @@ eevo_eval(EevoSt st, EevoRec env, Eevo v)
 
 /* determine size of string to be printed */
 size_t
-print_size(Eevo v)
+print_size(const Eevo v)
 {
 	int len = 0;
 	switch (v->t) {
@@ -949,7 +950,7 @@ print_size(Eevo v)
 
 /* Convert record to string stored in ret */
 static void
-print_rec(char *ret, EevoRec rec)
+print_rec(char *ret, const EevoRec rec)
 {
 	int len = 0;
 	for (EevoRec r = rec; r; r = r->next)
@@ -968,7 +969,7 @@ print_rec(char *ret, EevoRec rec)
 /* Convert eevo value to string to be printed
  *   returned string needs to be freed after use */
 char *
-eevo_print(Eevo v)
+eevo_print(const Eevo v)
 {
 	int size = print_size(v);
 	char *head, *tail, *ret = calloc(size, sizeof(char));
@@ -1032,7 +1033,7 @@ eevo_print(Eevo v)
 
 /* add new variable of name key and value v to the given environment */
 void
-eevo_env_add(EevoSt st, char *key, Eevo v)
+eevo_env_add(EevoSt st, char *key, const Eevo v)
 {
 	rec_add(st->env, key, v);
 }
