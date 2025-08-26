@@ -65,6 +65,13 @@ def docstr-reg
     (defined?
       "defined?(var)"
       "Return boolean on if variable is defined in environment")
+    (in
+      "in value collection"
+      "Check if value is a member of a collection:"
+      "  - Value is a type"
+      "  - Text is inside other text"
+      "  - Value is in a list"
+      "  - Value is a key of a record")
     (error
       "error(func msg)"
       "Throw error, print message with function name given as symbol")

@@ -257,6 +257,43 @@ form_definedp(EevoSt st, EevoRec env, Eevo args)
 	return (e && e->key) ? True : Nil;
 }
 
+/* check if value is a member of a collection */
+static Eevo
+prim_in(EevoSt st, EevoRec env, Eevo args)
+{
+	eevo_arg_min(args, "in", 2);
+	Eevo key = fst(args);
+	Eevo col = snd(args);
+	switch (col->t) {
+	case EEVO_TYPE:
+		return key->t & col->v.t.t ? True : Nil;
+	case EEVO_STR:
+	case EEVO_SYM:
+		eevo_arg_type(key, "in", EEVO_TEXT);
+		return strstr(col->v.s, key->v.s) ? True : Nil;
+	case EEVO_PAIR:
+		/* TODO: work on sublists like Str ? */
+		for (Eevo cur = col; cur->t == EEVO_PAIR; cur = rst(cur))
+			if (vals_eq(key, fst(cur)))
+				return True;
+		return Nil;
+	case EEVO_REC:
+		eevo_arg_type(key, "in", EEVO_TEXT);
+		for (EevoRec r = col->v.r; r; r = r->next) {
+			EevoEntry e = entry_get(r, key->v.s);
+			if (e->key)
+				return True;
+		}
+		return Nil;
+	case EEVO_PRIM:
+	case EEVO_FORM:
+	case EEVO_FUNC:
+	case EEVO_MACRO:
+		/* TODO: if key is valid input */
+	default:
+		eevo_warnf("in: expected collection, recieved %s", eevo_type_str(col->t));
+	}
+}
 
 void
 eevo_env_core(EevoSt st)
@@ -281,4 +318,5 @@ eevo_env_core(EevoSt st)
 	eevo_env_form(def);
 	eevo_env_name_form(undefine!, undefine);
 	eevo_env_name_form(defined?, definedp);
+	eevo_env_prim(in);
 }
