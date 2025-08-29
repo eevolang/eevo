@@ -109,6 +109,8 @@ uninstall:
 	@echo removing eevo libraries from $(DESTDIR)$(PREFIX)/share/eevo
 	@rm -rf $(DESTDIR)$(PREFIX)/share/eevo/
 
+test/test.o: test/tests.h
+
 test: $(OBJ) $(LIB) test/tests.h test/test.o
 	@echo running tests
 	@echo $(CC) -o test/test
