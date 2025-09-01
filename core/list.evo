@@ -26,7 +26,7 @@ def last(lst)
     last rst(lst)
     fst lst
 
-; TODO make nth generic for list str vec, made up of list-ref vec-ref str-ref
+; TODO make nth generic for list str vec
 def nth(lst n)
   "Element number n of list, starting from 0
   If negative get number from end of list"
@@ -141,16 +141,6 @@ def everyp?(proc lst)
 def every?(elem lst)
   "Return boolean if every element in list is equal to elem"
   everyp? @(= elem it) lst
-
-; TODO rewrite, optimize tco?
-def compose(... procs)
-  "Create function made from chaining procedures given"
-  cond
-    nil?(procs): Func(x x)
-    nil?(rst(procs)): fst(procs)
-    else
-      Func x
-        fst(procs) apply(apply(compose rst(procs)) x)
 
 def reverse(lst)
   "Reverse order of list"

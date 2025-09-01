@@ -179,3 +179,15 @@ defmacro (or a b)
 defmacro (xor? a b)
   "Exclusive or, either a or b are true, but not if both are true"
   [and [or a b] [not [and a b]]]
+
+;;; Compose
+
+; TODO rewrite, optimize tco?
+def compose(... procs)
+  "Create function made from chaining procedures given"
+  cond
+    nil?(procs): Func(x x)
+    nil?(rst(procs)): fst(procs)
+    else
+      Func x
+        fst(procs) apply(apply(compose rst(procs)) x)
