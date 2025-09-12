@@ -191,3 +191,12 @@ def compose(... procs)
     else
       Func x
         fst(procs) apply(apply(compose rst(procs)) x)
+
+;;; Records
+
+def reckeys(rec)
+  "List of keys in record"
+  map fst records(rec)
+def recvals(rec)
+  "List of values in record"
+  map rst records(rec)
