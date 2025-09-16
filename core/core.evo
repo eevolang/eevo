@@ -200,3 +200,7 @@ def reckeys(rec)
 def recvals(rec)
   "List of values in record"
   map rst records(rec)
+
+def vocab()
+  "List of symbols in current environment"
+  (reckeys ENV)
