@@ -121,6 +121,19 @@ def docstr-reg
       "time(expr)"
       "Time in milliseconds it took to run expression"))
 
+def help "
+  eevo <>.
+  Simple Yet Expressive High-level Scripting Language
+
+  Type an eevo expression and press Enter to see the results.
+
+  - Read about how a function works: doc NAME
+  - See a list of available functions: (vocab)
+  - Exit REPL: quit
+
+  Learn more at https://eevo.pub/learn
+"
+
 ; TODO print func args even if no docstr
 def doc(proc)
   "Get documentation of procedure"
