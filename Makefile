@@ -18,7 +18,7 @@ MAN = $(DOC:doc/%.md=doc/man/%)
 MANOPTS = -nCD -t EEVO -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`"
 VERSIONSHORT=$(shell cut -d '.' -f 1,2 <<< $(VERSION))
 
-all: options $(EXE)
+all: options $(EXE) $(LIB)
 
 options:
 	@echo $(EXE) build options:
@@ -47,7 +47,7 @@ $(LIB): $(CORE)
 	@echo $(CC) -o $@
 	@$(CC) -shared -o $@ $(OBJ)
 
-$(EXE): $(OBJ) $(LIB)
+$(EXE): $(OBJ)
 	@echo $(CC) -o $@
 	@$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
