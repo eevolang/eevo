@@ -15,7 +15,8 @@
 Eevo
 read_parse_eval(EevoSt st, Eevo file)
 {
-	Eevo val = eevo_list(st, 2, eevo_sym(st, "parse"), eevo_pair(eevo_sym(st, "read"), file));
+	Eevo read = eevo_pair(st, eevo_sym(st, "read"), file);
+	Eevo val = eevo_list(st, 2, eevo_sym(st, "parse"), read);
 	val = eevo_eval(st, st->env, val); /* read and parse */
 	return eevo_eval(st, st->env, val); /* eval resulting expressions */
 }
@@ -26,7 +27,7 @@ main(int argc, char *argv[])
 	int i = 1;
 	Eevo v = NULL;
 
-	EevoSt st = eevo_env_init(1024);
+	EevoSt st = eevo_env_init(64*1024);
 #ifndef EEVO_NOCORE
 	eevo_env_core(st);
 	eevo_env_math(st);
@@ -65,7 +66,7 @@ readstr:
 				v = read_parse_eval(st, &eevo_nil);
 			}
 		} else { /* otherwise read as file */
-			v = read_parse_eval(st, eevo_pair(eevo_str(st, argv[i]), &eevo_nil));
+			v = read_parse_eval(st, eevo_pair(st, eevo_str(st, argv[i]), &eevo_nil));
 		}
 		if (v && v->t != EEVO_VOID) {
 			char *s = eevo_print(v);
@@ -77,7 +78,7 @@ readstr:
 	/* if (v && v->t != EEVO_VOID) */
 		puts("");
 
-	free(st);
+	eevo_free(st);
 
 	return 0;
 }

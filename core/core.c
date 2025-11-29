@@ -42,7 +42,7 @@ static Eevo
 prim_Pair(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "Pair", 2);
-	return eevo_pair(fst(args), snd(args));
+	return eevo_pair(st, fst(args), snd(args));
 }
 
 /* do not evaluate argument */
@@ -102,18 +102,18 @@ prim_procprops(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "procprops", 1);
 	Eevo proc = fst(args);
-	EevoRec ret = rec_new(6, NULL);
+	EevoRec ret = rec_new(st, 6, NULL); /* TODO mv eevo_rec here */
 	switch (proc->t) {
 	case EEVO_FORM:
 	case EEVO_PRIM:
-		rec_add(ret, "name", eevo_sym(st, proc->v.pr.name));
+		rec_add(st, ret, "name", eevo_sym(st, proc->v.pr.name));
 		break;
 	case EEVO_FUNC:
 	case EEVO_MACRO:
-		rec_add(ret, "name", eevo_sym(st, proc->v.f.name ? proc->v.f.name : "anon"));
-		rec_add(ret, "args", proc->v.f.args);
-		rec_add(ret, "body", proc->v.f.body);
-		/* rec_add(ret, "env", proc->v.f.env); */
+		rec_add(st, ret, "name", eevo_sym(st, proc->v.f.name ? proc->v.f.name : "anon"));
+		rec_add(st, ret, "args", proc->v.f.args);
+		rec_add(st, ret, "body", proc->v.f.body);
+		/* rec_add(st, ret, "env", proc->v.f.env); */
 		break;
 	default:
 		eevo_warnf("procprops: expected Proc, received '%s'", eevo_type_str(proc->t));
@@ -128,13 +128,13 @@ form_Func(EevoSt st, EevoRec env, Eevo args)
 	Eevo params, body;
 	eevo_arg_min(args, "Func", 1);
 	if (nilp(rst(args))) { /* if only 1 argument is given, auto fill func parameters */
-		params = eevo_pair(eevo_sym(st, "it"), Nil);
+		params = eevo_pair(st, eevo_sym(st, "it"), Nil);
 		body = args;
 	} else {
 		params = fst(args);
 		body = rst(args);
 	}
-	return eevo_func(EEVO_FUNC, NULL, params, body, env);
+	return eevo_func(st, EEVO_FUNC, NULL, params, body, env);
 }
 
 /* creates new eevo defined macro */
@@ -168,15 +168,16 @@ prim_error(EevoSt st, EevoRec env, Eevo args)
 static Eevo
 prim_recmerge(EevoSt st, EevoRec env, Eevo args)
 {
-	Eevo ret = eevo_val(EEVO_REC);
+	Eevo ret = eevo_val(st, EEVO_REC); /* TODO use eevo_rec */
 	eevo_arg_num(args, "recmerge", 2);
 	eevo_arg_type(fst(args), "recmerge", EEVO_REC);
 	eevo_arg_type(snd(args), "recmerge", EEVO_REC);
-	ret->v.r = rec_new(snd(args)->v.r->size*EEVO_REC_FACTOR, fst(args)->v.r);
+	ret->v.r = rec_new(st, snd(args)->v.r->size*EEVO_REC_FACTOR, fst(args)->v.r);
 	for (EevoRec r = snd(args)->v.r; r; r = r->next)
 		for (int i = 0, c = 0; c < r->size; i++)
 			if (r->items[i].key)
-				c++, rec_add(ret->v.r, r->items[i].key, r->items[i].val);
+				c++, rec_add(st, ret->v.r,
+				             r->items[i].key, r->items[i].val);
 	return ret;
 }
 
@@ -190,9 +191,9 @@ prim_records(EevoSt st, EevoRec env, Eevo args)
 	for (EevoRec r = fst(args)->v.r; r; r = r->next)
 		for (int i = 0, c = 0; c < r->size; i++)
 			if (r->items[i].key) {
-				Eevo entry = eevo_pair(eevo_sym(st, r->items[i].key),
-				                               r->items[i].val);
-				ret = eevo_pair(entry, ret);
+				Eevo entry = eevo_pair(st, eevo_sym(st, r->items[i].key),
+				                                 r->items[i].val);
+				ret = eevo_pair(st, entry, ret);
 				c++;
 			}
 	return ret;
@@ -212,7 +213,7 @@ form_def(EevoSt st, EevoRec env, Eevo args)
 		if (sym->t != EEVO_SYM)
 			eevo_warnf("def: expected symbol for function name, received '%s'",
 			          eevo_type_str(sym->t));
-		val = eevo_func(EEVO_FUNC, sym->v.s, rfst(args), rst(args), env);
+		val = eevo_func(st, EEVO_FUNC, sym->v.s, rfst(args), rst(args), env);
 	} else if (fst(args)->t == EEVO_SYM) { /* create variable */
 		sym = fst(args); /* if only symbol given, make it self evaluating */
 		val = nilp(rst(args)) ? sym : eevo_eval(st, env, snd(args));
@@ -222,7 +223,7 @@ form_def(EevoSt st, EevoRec env, Eevo args)
 	/* set procedure name if it was previously anonymous */
 	if (val->t & (EEVO_FUNC|EEVO_MACRO) && !val->v.f.name)
 		val->v.f.name = sym->v.s; /* TODO some bug here */
-	rec_add(env, sym->v.s, val);
+	rec_add(st, env, sym->v.s, val);
 	return Void;
 }
 
@@ -300,17 +301,17 @@ eevo_env_core(EevoSt st)
 {
 	eevo_env_prim(fst);
 	eevo_env_prim(rst);
-	st->types[11]->v.t.func = eevo_prim(EEVO_PRIM, prim_Pair, "Pair");
+	st->types[11]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Pair, "Pair");
 	eevo_env_form(quote);
 	eevo_env_prim(eval);
 	eevo_env_name_prim(=, eq);
 	eevo_env_form(cond);
-	eevo_env_add(st, "do", eevo_prim(EEVO_FORM, eevo_eval_body, "do"));
+	eevo_env_add(st, "do", eevo_prim(st, EEVO_FORM, eevo_eval_body, "do"));
 
 	eevo_env_prim(typeof);
 	eevo_env_prim(procprops);
-	st->types[9]->v.t.func  = eevo_prim(EEVO_FORM, form_Func,  "Func");
-	st->types[10]->v.t.func = eevo_prim(EEVO_FORM, form_Macro, "Macro");
+	st->types[9]->v.t.func  = eevo_prim(st, EEVO_FORM, form_Func,  "Func");
+	st->types[10]->v.t.func = eevo_prim(st, EEVO_FORM, form_Macro, "Macro");
 	eevo_env_prim(error);
 
 	eevo_env_prim(recmerge);

@@ -48,7 +48,7 @@ prim_strlen(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_min(args, "strlen", 1);
 	eevo_arg_type(fst(args), "strlen", EEVO_STR | EEVO_SYM);
-	return eevo_int(strlen(fst(args)->v.s));
+	return eevo_int(st, strlen(fst(args)->v.s));
 }
 
 /* perform interpolation on explicit string, evaluating anything inside curly braces */
@@ -105,8 +105,8 @@ form_strfmt(EevoSt st, EevoRec env, Eevo args)
 void
 eevo_env_string(EevoSt st)
 {
-	st->types[5]->v.t.func = eevo_prim(EEVO_PRIM, prim_Str, "Str");
-	st->types[6]->v.t.func = eevo_prim(EEVO_PRIM, prim_Sym, "Sym");
+	st->types[5]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Str, "Str");
+	st->types[6]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Sym, "Sym");
 	eevo_env_prim(strlen);
 	eevo_env_form(strfmt);
 }

@@ -49,7 +49,7 @@ struct Eevo_ eevo_void = { .t = EEVO_VOID };
 #define LEN(X)            (sizeof(X) / sizeof((X)[0]))
 
 /* functions */
-static void rec_add(EevoRec rec, char *key, const Eevo val);
+static void rec_add(EevoSt st, EevoRec rec, char *key, const Eevo val);
 static Eevo eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args);
 
 
@@ -190,7 +190,63 @@ frac_reduce(int *num, int *den)
 	*den = *den / b;
 }
 
-/* records */
+/*** Stack ***/
+
+static EevoStack *
+new_region(size_t cap)
+{
+	size_t size = sizeof(EevoStack) + sizeof(uintptr_t)*cap;
+	EevoStack *r;
+	if (!(r = malloc(size))) /* TODO: page align */
+		perror("; malloc"), exit(1);
+	r->next = NULL;
+	r->size = 0;
+	r->cap  = cap;
+	return r;
+}
+
+static void *
+arena_alloc(EevoArena *a, size_t size_bytes)
+{
+	size_t size = (size_bytes + sizeof(uintptr_t) - 1)/sizeof(uintptr_t);
+
+	/* Extend if requesting more than max capacity */
+	while (a->end->size + size > a->end->cap && a->end->next)
+		a->end = a->end->next;
+	if (a->end->size + size > a->end->cap) {
+		/* assert(!a->end->next); */
+		/* a->end->next = new_region(EEVO_STACK_CAP < size ? size : EEVO_STACK_CAP); */
+		a->end->next = new_region(size > EEVO_STACK_CAP ? size : EEVO_STACK_CAP);
+		a->end = a->end->next;
+	}
+
+	/* Allocate new region */
+	void *ret = &a->end->data[a->end->size];
+	a->end->size += size;
+	return ret;
+}
+
+static void
+arena_reset(EevoArena *a)
+{
+	for (EevoStack *r = a->beg; r; r = r->next)
+		r->size = 0;
+	a->end = a->beg;
+}
+
+static void
+arena_free(EevoArena *a)
+{
+	for (EevoStack *r = a->beg; r;) {
+		EevoStack *r0 = r;
+		r = r->next;
+		free(r0);
+	}
+	/* a->beg = NULL; */
+	/* a->end = NULL; */
+}
+
+/*** Records ***/
 
 /* return hashed number based on key */
 static uint32_t
@@ -204,16 +260,15 @@ hash(const char *key)
 }
 
 /* create new empty rec with given capacity */
+/* TODO rename rec ? */
 static EevoRec
-rec_new(size_t cap, const EevoRec next)
+rec_new(EevoSt st, size_t cap, const EevoRec next)
 {
-	EevoRec rec;
-	if (!(rec = malloc(sizeof(struct EevoRec_))))
-		perror("; malloc"), exit(1);
+	EevoRec rec = arena_alloc(&st->mem, sizeof(struct EevoRec_));
 	rec->size = 0;
 	rec->cap = cap;
-	if (!(rec->items = calloc(cap, sizeof(struct EevoEntry_))))
-		perror("; calloc"), exit(1);
+	rec->items = arena_alloc(&st->mem, cap*sizeof(struct EevoEntry_));
+	memset(rec->items, 0, cap*sizeof(rec->items));
 	rec->next = next;
 	return rec;
 }
@@ -238,9 +293,8 @@ entry_get(EevoRec rec, const char *key)
 static Eevo
 rec_get(EevoRec rec, const char *key)
 {
-	EevoEntry e;
 	for (; rec; rec = rec->next) {
-		e = entry_get(rec, key);
+		EevoEntry e = entry_get(rec, key);
 		if (e->key)
 			return e->val;
 	}
@@ -248,23 +302,22 @@ rec_get(EevoRec rec, const char *key)
 }
 
 /* enlarge the record to ensure algorithm's efficiency */
+/* TODO replace by implementing record as segmented array */
 static void
-rec_grow(EevoRec rec)
+rec_grow(EevoSt st, EevoRec rec)
 {
 	int i, ocap = rec->cap;
 	EevoEntry oitems = rec->items;
 	rec->cap *= EEVO_REC_FACTOR;
-	if (!(rec->items = calloc(rec->cap, sizeof(struct EevoEntry_))))
-		perror("; calloc"), exit(1);
+	rec->items = arena_alloc(&st->mem, rec->cap*sizeof(struct EevoEntry_));
 	for (i = 0; i < ocap; i++) /* repopulate new record with old values */
 		if (oitems[i].key)
-			rec_add(rec, oitems[i].key, oitems[i].val);
-	free(oitems);
+			rec_add(st, rec, oitems[i].key, oitems[i].val);
 }
 
 /* create new key and value pair to the record */
 static void
-rec_add(EevoRec rec, char *key, const Eevo val)
+rec_add(EevoSt st, EevoRec rec, char *key, const Eevo val)
 {
 	EevoEntry e = entry_get(rec, key);
 	e->val = val;
@@ -272,18 +325,18 @@ rec_add(EevoRec rec, char *key, const Eevo val)
 		e->key = key;
 		/* grow record if it is more than half full */
 		if (++rec->size > rec->cap / EEVO_REC_FACTOR)
-			rec_grow(rec);
+			rec_grow(st, rec);
 	}
 }
 
 /* add each vals[i] to rec with key args[i] */
 static EevoRec
-rec_extend(EevoRec next, Eevo args, Eevo vals)
+rec_extend(EevoSt st, EevoRec next, Eevo args, Eevo vals)
 {
 	Eevo arg, val;
 	int argnum = EEVO_REC_FACTOR * eevo_lstlen(args);
 	/* HACK need extra +1 for when argnum = 0 */
-	EevoRec ret = rec_new(argnum > 0 ? argnum : -argnum + 1, next);
+	EevoRec ret = rec_new(st, argnum > 0 ? argnum : -argnum + 1, next);
 	for (; !nilp(args); args = rst(args), vals = rst(vals)) {
 		if (args->t == EEVO_PAIR) {
 			arg = fst(args);
@@ -296,7 +349,7 @@ rec_extend(EevoRec next, Eevo args, Eevo vals)
 			eevo_warnf("expected symbol for argument of function definition, "
 			           "recieved '%s'",
 			          eevo_type_str(arg->t));
-		rec_add(ret, arg->v.s, val);
+		rec_add(st, ret, arg->v.s, val);
 		if (args->t != EEVO_PAIR)
 			break;
 	}
@@ -306,11 +359,9 @@ rec_extend(EevoRec next, Eevo args, Eevo vals)
 /*** Type Constructors ***/
 
 Eevo
-eevo_val(EevoType t)
+eevo_val(EevoSt st, EevoType t)
 {
-	Eevo ret;
-	if (!(ret = malloc(sizeof(struct Eevo_))))
-		perror("; malloc"), exit(1);
+	Eevo ret = arena_alloc(&st->mem, sizeof(struct Eevo_));
 	ret->t = t;
 	return ret;
 }
@@ -318,7 +369,7 @@ eevo_val(EevoType t)
 Eevo
 eevo_type(EevoSt st, EevoType t, char *name, Eevo func)
 {
-	Eevo ret = eevo_val(EEVO_INT);
+	Eevo ret = eevo_val(st, EEVO_INT);
 	ret->t = EEVO_TYPE;
 	ret->v.t = (EevoTypeVal){ .t = t, .name = name, .func = func };
 	/* ret->t = EEVO_TYPE & t; */
@@ -327,25 +378,25 @@ eevo_type(EevoSt st, EevoType t, char *name, Eevo func)
 }
 
 Eevo
-eevo_int(int i)
+eevo_int(EevoSt st, int i)
 {
-	Eevo ret = eevo_val(EEVO_INT);
+	Eevo ret = eevo_val(st, EEVO_INT);
 	num(ret) = i;
 	den(ret) = 1;
 	return ret;
 }
 
 Eevo
-eevo_dec(double d)
+eevo_dec(EevoSt st, double d)
 {
-	Eevo ret = eevo_val(EEVO_DEC);
+	Eevo ret = eevo_val(st, EEVO_DEC);
 	num(ret) = d;
 	den(ret) = 1;
 	return ret;
 }
 
 Eevo
-eevo_rat(int num, int den)
+eevo_rat(EevoSt st, int num, int den)
 {
 	Eevo ret;
 	if (den == 0)
@@ -356,8 +407,8 @@ eevo_rat(int num, int den)
 		num = -num;
 	}
 	if (den == 1) /* simplify into integer if denominator is 1 */
-		return eevo_int(num);
-	ret = eevo_val(EEVO_RATIO);
+		return eevo_int(st, num);
+	ret = eevo_val(st, EEVO_RATIO);
 	num(ret) = num;
 	den(ret) = den;
 	return ret;
@@ -370,9 +421,9 @@ eevo_str(EevoSt st, char *s)
 	Eevo ret;
 	if ((ret = rec_get(st->strs, s)))
 		return ret;
-	ret = eevo_val(EEVO_STR);
+	ret = eevo_val(st, EEVO_STR);
 	ret->v.s = s;
-	rec_add(st->strs, s, ret);
+	rec_add(st, st->strs, s, ret);
 	return ret;
 }
 
@@ -382,25 +433,25 @@ eevo_sym(EevoSt st, char *s)
 	Eevo ret;
 	if ((ret = rec_get(st->syms, s)))
 		return ret;
-	ret = eevo_val(EEVO_SYM);
+	ret = eevo_val(st, EEVO_SYM);
 	ret->v.s = s;
-	rec_add(st->syms, s, ret);
+	rec_add(st, st->syms, s, ret);
 	return ret;
 }
 
 Eevo
-eevo_prim(EevoType t, EevoPrim pr, char *name)
+eevo_prim(EevoSt st, EevoType t, EevoPrim pr, char *name)
 {
-	Eevo ret = eevo_val(t);
+	Eevo ret = eevo_val(st, t);
 	ret->v.pr.name = name;
 	ret->v.pr.pr = pr;
 	return ret;
 }
 
 Eevo
-eevo_func(EevoType t, char *name, Eevo args, Eevo body, EevoRec env)
+eevo_func(EevoSt st, EevoType t, char *name, Eevo args, Eevo body, EevoRec env)
 {
-	Eevo ret = eevo_val(t);
+	Eevo ret = eevo_val(st, t);
 	ret->v.f.name = name;
 	ret->v.f.args = args;
 	ret->v.f.body = body;
@@ -409,34 +460,35 @@ eevo_func(EevoType t, char *name, Eevo args, Eevo body, EevoRec env)
 }
 
 /* TODO swap eevo_rec and rec_new */
+/* TODO lazy eval, remove eval and store env in rec */
 Eevo
 eevo_rec(EevoSt st, EevoRec prev, const Eevo records)
 {
 	int cap;
-	Eevo v, ret = eevo_val(EEVO_REC);
+	Eevo v, ret = eevo_val(st, EEVO_REC);
 	if (!records)
 		return ret->v.r = prev, ret;
 	cap = EEVO_REC_FACTOR * eevo_lstlen(records);
-	ret->v.r = rec_new(cap > 0 ? cap : -cap + 1, NULL);
-	EevoRec r = rec_new(4, prev);
-	rec_add(r, "this", ret);
+	ret->v.r = rec_new(st, cap > 0 ? cap : -cap + 1, NULL);
+	EevoRec r = rec_new(st, 4, prev);
+	rec_add(st, r, "this", ret);
 	for (Eevo cur = records; cur->t == EEVO_PAIR; cur = rst(cur))
 		if (fst(cur)->t == EEVO_PAIR && ffst(cur)->t & (EEVO_SYM|EEVO_STR)) {
 			if (!(v = eevo_eval(st, r, fst(rfst(cur)))))
 				return NULL;
-			rec_add(ret->v.r, ffst(cur)->v.s, v);
+			rec_add(st, ret->v.r, ffst(cur)->v.s, v);
 		} else if (fst(cur)->t == EEVO_SYM) {
 			if (!(v = eevo_eval(st, r, fst(cur))))
 				return NULL;
-			rec_add(ret->v.r, fst(cur)->v.s, v);
+			rec_add(st, ret->v.r, fst(cur)->v.s, v);
 		} else eevo_warn("Rec: missing key symbol or string");
 	return ret;
 }
 
 Eevo
-eevo_pair(Eevo a, Eevo b)
+eevo_pair(EevoSt st, Eevo a, Eevo b)
 {
-	Eevo ret = eevo_val(EEVO_PAIR);
+	Eevo ret = eevo_val(st, EEVO_PAIR);
 	fst(ret) = a;
 	rst(ret) = b;
 	return ret;
@@ -448,9 +500,9 @@ eevo_list(EevoSt st, int n, ...)
 	Eevo lst;
 	va_list argp;
 	va_start(argp, n);
-	lst = eevo_pair(va_arg(argp, Eevo), Nil);
+	lst = eevo_pair(st, va_arg(argp, Eevo), Nil);
 	for (Eevo cur = lst; n > 1; n--, cur = rst(cur))
-		rst(cur) = eevo_pair(va_arg(argp, Eevo), Nil);
+		rst(cur) = eevo_pair(st, va_arg(argp, Eevo), Nil);
 	va_end(argp);
 	return lst;
 }
@@ -493,7 +545,7 @@ read_base(EevoSt st, int base)
 			ret = ret * base + (c - '0');
 		else if (c != '_')
 			ret = ret * base + (tolower(c) - 'a' + 10);
-	return eevo_int(ret);
+	return eevo_int(st, ret);
 }
 
 /* return read scientific notation */
@@ -509,8 +561,8 @@ read_sci(EevoSt st, double val, int isint)
 
 finish:
 	if (isint)
-		return eevo_int(val);
-	return eevo_dec(val);
+		return eevo_int(st, val);
+	return eevo_dec(st, val);
 }
 
 /* return read number */
@@ -530,7 +582,7 @@ read_num(EevoSt st)
 	case '/':
 		if (!isnum(st->file + ++st->filec))
 			eevo_warn("incorrect ratio format, no denominator found");
-		return eevo_rat(sign * num, read_sign(st) * read_int(st));
+		return eevo_rat(st, sign * num, read_sign(st) * read_int(st));
 	case '.':
 		eevo_finc(st);
 		oldc = st->filec;
@@ -604,7 +656,7 @@ read_sym(EevoSt st, int (*is_char)(char))
 Eevo
 read_pair(EevoSt st, char endchar)
 {
-	Eevo v, ret = eevo_pair(NULL, Nil);
+	Eevo v, ret = eevo_pair(st, NULL, Nil);
 	int skipnl = endchar != '\n';
 	skip_ws(st, 1);
 	/* if (!eevo_fget(st)) */
@@ -623,7 +675,7 @@ read_pair(EevoSt st, char endchar)
 			rst(pos) = v;
 			break;
 		}
-		rst(pos) = eevo_pair(v, Nil);
+		rst(pos) = eevo_pair(st, v, Nil);
 		/* if (v->t == EEVO_SYM && is_op(v->v.s[0])) { */
 		/* 	is_infix = 1; */
 		/* 	skip_ws(st, 1); */
@@ -684,11 +736,11 @@ eevo_read_sexpr(EevoSt st)
 	if (eevo_fget(st) == '(') /* list */
 		return eevo_finc(st), read_pair(st, ')');
 	if (eevo_fget(st) == '[') /* list */
-		return eevo_finc(st), eevo_pair(eevo_sym(st, "list"), read_pair(st, ']'));
+		return eevo_finc(st), eevo_pair(st, eevo_sym(st, "list"), read_pair(st, ']'));
 	if (eevo_fget(st) == '{') { /* record */
 		Eevo v; eevo_finc(st);
 		if (!(v = read_pair(st, '}'))) return NULL;
-		return eevo_pair(eevo_sym(st, "Rec"), v);
+		return eevo_pair(st, eevo_sym(st, "Rec"), v);
 	}
 	eevo_warnf("could not parse given input '%c' (%d)",
 	          st->file[st->filec], (int)st->file[st->filec]);
@@ -717,12 +769,12 @@ eevo_read_sugar(EevoSt st, const Eevo v)
 		/* FIXME @it(3) */
 		eevo_finc(st);
 		if (!(lst = read_pair(st, ')'))) return NULL;
-		return eevo_pair(v, lst);
+		return eevo_pair(st, v, lst);
 	} else if (eevo_fget(st) == '{') { /* rec{ key: value } => (recmerge rec { key: value }) */
 		eevo_finc(st);
 		if (!(lst = read_pair(st, '}'))) return NULL;
 		return eevo_list(st, 3, eevo_sym(st, "recmerge"), v,
-		                      eevo_pair(eevo_sym(st, "Rec"), lst));
+		                        eevo_pair(st, eevo_sym(st, "Rec"), lst));
 	} else if (eevo_fget(st) == ':') {
 		eevo_finc(st);
 		switch (eevo_fget(st)) {
@@ -730,7 +782,7 @@ eevo_read_sugar(EevoSt st, const Eevo v)
 			eevo_finc(st);
 			if (!(w = read_pair(st, ')'))) return NULL;
 			return eevo_list(st, 3, eevo_sym(st, "map"), v,
-			                      eevo_pair(eevo_sym(st, "list"), w));
+			                        eevo_pair(st, eevo_sym(st, "list"), w));
 		case ':': /* var::prop => (var 'prop) */
 			eevo_finc(st);
 			if (!(w = read_sym(st, &is_sym))) return NULL;
@@ -745,10 +797,10 @@ eevo_read_sugar(EevoSt st, const Eevo v)
 		if (!(w = eevo_read(st)))
 			eevo_warn("invalid UFCS");
 		if (w->t != EEVO_PAIR)
-			w = eevo_pair(w, Nil);
-		return eevo_pair(fst(w), eevo_pair(v, rst(w)));
+			w = eevo_pair(st, w, Nil);
+		return eevo_pair(st, fst(w), eevo_pair(st, v, rst(w)));
 	}
-	/* return eevo_pair(v, eevo_read(st)); */
+	/* return eevo_pair(st, v, eevo_read(st)); */
 	return v;
 }
 
@@ -763,7 +815,7 @@ eevo_read_line(EevoSt st, int level)
 	if (!(ret = read_pair(st, '\n'))) /* read line */
 		return NULL;
 	if (ret->t != EEVO_PAIR) /* force to be pair */
-		ret = eevo_pair(ret, Nil);
+		ret = eevo_pair(st, ret, Nil);
 	for (pos = ret; rst(pos)->t == EEVO_PAIR; pos = rst(pos)) ; /* get last pair */
 	for (; eevo_fget(st); pos = rst(pos)) { /* read indented lines as sub-expressions */
 		Eevo v;
@@ -775,7 +827,7 @@ eevo_read_line(EevoSt st, int level)
 		if (!(v = eevo_read_line(st, newlevel)))
 			return NULL;
 		if (!nilp(v))
-			rst(pos) = eevo_pair(v, rst(pos));
+			rst(pos) = eevo_pair(st, v, rst(pos));
 	}
 	return nilp(rst(ret)) ? fst(ret) : ret; /* if only 1 element in list, return just it */
 }
@@ -788,7 +840,7 @@ eevo_read_line(EevoSt st, int level)
 Eevo
 eevo_eval_list(EevoSt st, const EevoRec env, Eevo v)
 {
-	Eevo ret = eevo_pair(NULL, Nil), ev;
+	Eevo ret = eevo_pair(st, NULL, Nil), ev;
 	for (Eevo cur = ret; !nilp(v); v = rst(v), cur = rst(cur)) {
 		if (v->t != EEVO_PAIR) { /* last element in improper list */
 			if (!(ev = eevo_eval(st, env, v)))
@@ -798,7 +850,7 @@ eevo_eval_list(EevoSt st, const EevoRec env, Eevo v)
 		}
 		if (!(ev = eevo_eval(st, env, fst(v))))
 			return NULL;
-		rst(cur) = eevo_pair(ev, Nil);
+		rst(cur) = eevo_pair(st, ev, Nil);
 	}
 	return rst(ret);
 }
@@ -819,7 +871,7 @@ eevo_eval_body(EevoSt st, EevoRec env, Eevo body)
 			            eevo_lstlen(f->v.f.args));
 			if (!(args = eevo_eval_list(st, env, rfst(body))))
 				return NULL;
-			if (!(env = rec_extend(f->v.f.env, f->v.f.args, args)))
+			if (!(env = rec_extend(st, f->v.f.env, f->v.f.args, args)))
 				return NULL;
 			/* continue loop from body of func call */
 			body = f->v.f.body;
@@ -841,7 +893,7 @@ prepend_bt(EevoSt st, EevoRec env, Eevo f)
 	if (e->val->t == EEVO_PAIR && fst(e->val)->t == EEVO_SYM &&
 	    !strncmp(f->v.f.name, fst(e->val)->v.s, strlen(fst(e->val)->v.s)))
 		return; /* don't record same function on recursion */
-	e->val = eevo_pair(eevo_sym(st, f->v.f.name), e->val);
+	e->val = eevo_pair(st, eevo_sym(st, f->v.f.name), e->val);
 }
 
 /* evaluate procedure f with arguments */
@@ -864,7 +916,7 @@ eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args)
 		/* FALLTHROUGH */
 	case EEVO_MACRO:
 		eevo_arg_num(args, f->v.f.name ? f->v.f.name : "anon", eevo_lstlen(f->v.f.args));
-		if (!(fenv = rec_extend(f->v.f.env, f->v.f.args, args)))
+		if (!(fenv = rec_extend(st, f->v.f.env, f->v.f.args, args)))
 			return NULL;
 		if (!(ret = eevo_eval_body(st, fenv, f->v.f.body)))
 			return prepend_bt(st, env, f), NULL;
@@ -1035,25 +1087,29 @@ eevo_print(const Eevo v)
 void
 eevo_env_add(EevoSt st, char *key, const Eevo v)
 {
-	rec_add(st->env, key, v);
+	rec_add(st, st->env, key, v);
 }
 
 /* initialise eevo's state and global environment */
 EevoSt
 eevo_env_init(size_t cap)
 {
-	EevoSt st;
-	if (!(st = malloc(sizeof(struct EevoSt_))))
-		perror("; malloc"), exit(1);
+	EevoArena mem;
+	mem.end = new_region(cap);
+	mem.beg = mem.end;
+
+	EevoSt st = arena_alloc(&mem, sizeof(struct EevoSt_));
+
+	st->mem = mem;
 
 	st->file = NULL;
 	st->filec = 0;
 
 	/* TODO intern (memorize) all types, including stateless func calls */
-	st->strs = rec_new(cap, NULL);
-	st->syms = rec_new(cap, NULL);
+	st->strs = rec_new(st, cap, NULL);
+	st->syms = rec_new(st, cap, NULL);
 
-	st->env = rec_new(cap, NULL);
+	st->env = rec_new(st, cap, NULL);
 	eevo_env_add(st, "True", True);
 	eevo_env_add(st, "Nil", Nil);
 	eevo_env_add(st, "Void", Void);
@@ -1076,8 +1132,10 @@ eevo_env_init(size_t cap)
 	/* Eevo lst = eevo_sym(st, "lst"); */
 	/* Eevo List = eevo_func(EEVO_FUNC, "List", lst, eevo_list(st, 1, lst), st->env); */
 	/* st->types[11] = eevo_type(st, EEVO_PAIR | EEVO_VOID,  "List",  List); */
-	st->types[12] = eevo_type(st, EEVO_REC,   "Rec",   eevo_prim(EEVO_FORM, eevo_rec,    "Rec"));
-	st->types[13] = eevo_type(st, EEVO_TYPE,  "Type",  eevo_prim(EEVO_PRIM, eevo_typeof, "Type"));
+	st->types[12] = eevo_type(st, EEVO_REC, "Rec",
+	                          eevo_prim(st, EEVO_FORM, eevo_rec,    "Rec"));
+	st->types[13] = eevo_type(st, EEVO_TYPE, "Type",
+	                          eevo_prim(st, EEVO_PRIM, eevo_typeof, "Type"));
 	for (int i = 0; i < LEN(st->types); i++)
 		eevo_env_add(st, st->types[i]->v.t.name, st->types[i]);
 		/* TODO define type predicate functions here (nil?, string?, etc) */
@@ -1085,6 +1143,12 @@ eevo_env_init(size_t cap)
 	/* eevo_env_lib(st, libs); */
 
 	return st;
+}
+
+void
+eevo_free(EevoSt st)
+{
+	arena_free(&st->mem);
 }
 
 /* load lib from string into environment */
@@ -1097,9 +1161,9 @@ eevo_env_lib(EevoSt st, char* lib)
 	st->file = lib;
 	st->filec = 0;
 	skip_ws(st, 1);
-	parsed = eevo_pair(eevo_sym(st, "do"), Nil);
+	parsed = eevo_pair(st, eevo_sym(st, "do"), Nil);
 	for (Eevo pos = parsed; eevo_fget(st) && (expr = eevo_read_line(st, 0)); pos = rst(pos))
-		rst(pos) = eevo_pair(expr, Nil);
+		rst(pos) = eevo_pair(st, expr, Nil);
 	ret = eevo_eval_body(st, st->env, rst(parsed));
 	st->file = file;
 	st->filec = filec;

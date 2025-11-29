@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 /*** Configuration ***/
 
@@ -106,8 +107,22 @@ struct Eevo_ {
 	} v;
 };
 
+#define EEVO_STACK_CAP (64*1024)
+
+typedef struct EevoStack_ EevoStack;
+struct EevoStack_ {
+	EevoStack *next; /* TODO remove arena use prev instead? */
+	size_t size, cap;
+	uintptr_t data[];
+};
+
+typedef struct {
+	EevoStack *beg, *end;
+} EevoArena;
+
 /* eevo state and global environment */
 struct EevoSt_ {
+	EevoArena mem;
 	char *file;
 	size_t filec;
 	Eevo types[14];
@@ -147,9 +162,9 @@ struct EevoSt_ {
 		                eevo_type_str(TYPE), eevo_type_str(ARG->t));     \
 } while(0)
 
-#define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_PRIM, prim_##FN, #NAME))
+#define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(st, EEVO_PRIM, prim_##FN, #NAME))
 #define eevo_env_prim(NAME)          eevo_env_name_prim(NAME, NAME)
-#define eevo_env_name_form(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(EEVO_FORM, form_##FN, #NAME))
+#define eevo_env_name_form(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(st, EEVO_FORM, form_##FN, #NAME))
 #define eevo_env_form(NAME)          eevo_env_name_form(NAME, NAME)
 
 #define eevo_fgetat(ST, O) ST->file[ST->filec+O]
@@ -162,15 +177,15 @@ struct EevoSt_ {
 char *eevo_type_str(EevoType t);
 int eevo_lstlen(Eevo v);
 
-Eevo eevo_int(int i);
-Eevo eevo_dec(double d);
-Eevo eevo_rat(int num, int den);
-Eevo eevo_str(EevoSt st, char *s);
-Eevo eevo_sym(EevoSt st, char *s);
-Eevo eevo_prim(EevoType t, EevoPrim prim, char *name);
-Eevo eevo_func(EevoType t, char *name, Eevo args, Eevo body, EevoRec env);
-Eevo eevo_rec(EevoSt st, EevoRec prev, const Eevo records);
-Eevo eevo_pair(Eevo a, Eevo b);
+Eevo  eevo_int(EevoSt st, int i);
+Eevo  eevo_dec(EevoSt st, double d);
+Eevo  eevo_rat(EevoSt st, int num, int den);
+Eevo  eevo_str(EevoSt st, char *s);
+Eevo  eevo_sym(EevoSt st, char *s);
+Eevo eevo_prim(EevoSt st, EevoType t, EevoPrim prim, char *name);
+Eevo eevo_func(EevoSt st, EevoType t, char *name, Eevo args, Eevo body, EevoRec env);
+Eevo  eevo_rec(EevoSt st, EevoRec prev, const Eevo records);
+Eevo eevo_pair(EevoSt st, Eevo a, Eevo b);
 Eevo eevo_list(EevoSt st, int n, ...);
 
 Eevo eevo_read_sexpr(EevoSt st);
@@ -185,6 +200,8 @@ char *eevo_print(const Eevo v);
 void   eevo_env_add(EevoSt st, char *key, const Eevo v);
 EevoSt eevo_env_init(size_t cap);
 Eevo   eevo_env_lib(EevoSt st, char* lib);
+
+void eevo_free(EevoSt st);
 
 void eevo_env_core(EevoSt);
 void eevo_env_string(EevoSt);

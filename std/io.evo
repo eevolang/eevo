@@ -29,7 +29,7 @@ def display(... vals)
               (or (map Func((x) Str(fst(x) ": " display(rst(x)) " ")) records(it))
                   "")
               "}")
-         else: (Str it))
+          else: (Str it))
       vals
 
 def print(... str)      write('stdout Nil ... str)

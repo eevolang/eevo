@@ -64,7 +64,7 @@ static Eevo
 prim_now(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "now", 0);
-	return eevo_int(time(NULL));
+	return eevo_int(st, time(NULL));
 }
 
 /* TODO time-avg: run timeit N times and take average */
@@ -79,7 +79,7 @@ form_time(EevoSt st, EevoRec env, Eevo args)
 	if (!(v = eevo_eval(st, env, fst(args))))
 		return NULL;
 	t = clock() - t;
-	return eevo_dec(((double)t)/CLOCKS_PER_SEC*100);
+	return eevo_dec(st, ((double)t)/CLOCKS_PER_SEC*100);
 }
 
 void
