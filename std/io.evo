@@ -42,7 +42,7 @@ def printerrln(... str) printerr(... str) (newline)
 def (repl)
   "Read, evaluate, print, loop
   To exit enter quit or press CTRL-D"
-  print "> "
+  print ">>> "
   let (expr: parse(read()))
     unless (= expr 'quit)
       ; TODO push ans to stack of outputs
