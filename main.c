@@ -34,6 +34,7 @@ main(int argc, char *argv[])
 	eevo_env_io(st);
 	eevo_env_os(st);
 	eevo_env_string(st);
+	eevo_env_sys(st);
 	eevo_env_lib(st, eevo_core);
 #endif
 

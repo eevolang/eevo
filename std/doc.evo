@@ -119,7 +119,12 @@ def docstr-reg
       "Number of seconds since 1970 (unix time stamp)")
     (time
       "time(expr)"
-      "Time in milliseconds it took to run expression"))
+      "Time in milliseconds it took to run expression")
+    (sys
+      "sys command ... args"
+      "Run system command with arguments"
+      "  Returns Void on success, number of error code from command if failure,"
+      "  and error if command could not be run"))
 
 def help "
   eevo <>.

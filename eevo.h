@@ -208,5 +208,6 @@ void eevo_env_string(EevoSt);
 void eevo_env_math(EevoSt);
 void eevo_env_io(EevoSt);
 void eevo_env_os(EevoSt);
+void eevo_env_sys(EevoSt);
 
 #endif // EEVO_H

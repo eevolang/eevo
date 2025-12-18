@@ -2,7 +2,7 @@
 VERSION = 0.1
 
 # core modules and standard library to include
-STD    = std/io.c std/os.c
+STD    = std/io.c std/os.c std/sys.c
 STDEVO = std/io.evo std/doc.evo
 CORE   = core/core.c core/string.c core/math.c $(STD)
 EVO    = core/core.evo core/list.evo core/math.evo $(STDEVO)
