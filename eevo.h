@@ -199,7 +199,7 @@ char *eevo_print(const Eevo v);
 
 void   eevo_env_add(EevoSt st, char *key, const Eevo v);
 EevoSt eevo_env_init(size_t cap);
-Eevo   eevo_env_lib(EevoSt st, char* lib);
+Eevo   eevo_env_lib(EevoSt st);
 
 void eevo_free(EevoSt st);
 

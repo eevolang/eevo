@@ -16,7 +16,8 @@ DOC = doc/eevo.1.md doc/eevo.5.md
 MAN = $(DOC:doc/%.md=doc/man/%)
 
 MANOPTS = -nCD -t EEVO -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`"
-VERSIONSHORT=$(shell cut -d '.' -f 1,2 <<< $(VERSION))
+# VERSION without patch eg 1.2.3 -> 1.2
+VER=$(shell cut -d '.' -f 1,2 <<< $(VERSION))
 
 all: options $(EXE) $(LIB)
 
@@ -31,6 +32,15 @@ core.evo.h: $(EVO)
 	@cat $^ | xxd -i - >> $@
 	@echo ", 0x00};" >> $@
 
+$(EXE)$(VER).c: eevo.c $(CORE) $(STD) core.evo.h
+	@echo creating $@
+	@cat $^ > $@
+	@sed -i 's/^#include "eevo.h"/#include "$(EXE)$(VER).h"/' $@
+
+$(EXE)$(VER).h: $(EVO)
+	@echo creating $@
+	@cp eevo.h $@
+
 .o:
 	@echo $(LD) $@
 	@$(LD) -o $@ $< $(LDFLAGS)
@@ -41,19 +51,17 @@ core.evo.h: $(EVO)
 
 $(OBJ): $(CORE) eevo.h config.mk
 
-main.o: core.evo.h
-
 $(LIB): $(CORE)
 	@echo $(CC) -o $@
-	@$(CC) -shared -o $@ $(OBJ)
+	@$(CC) -shared -o $@ $(EXE)$(VER).o
 
-$(EXE): $(OBJ)
+$(EXE): $(EXE)$(VER).h $(EXE)$(VER).o main.o
 	@echo $(CC) -o $@
-	@$(CC) -o $@ $(OBJ) $(LDFLAGS)
+	@$(CC) -o $@ main.o $(EXE)$(VER).o $(LDFLAGS)
 
 clean:
 	@echo cleaning
-	@rm -f $(OBJ) $(LIB) $(EXE) test/test test/test.o core.evo.h
+	@rm -f $(OBJ) $(EXE) $(EXE)$(VER).? test/test test/test.o
 
 man: $(MAN)
 
@@ -65,23 +73,21 @@ doc/man/%.5: doc/%.5.md $(EXE)
 	@echo updating man page $@
 	@markman $(MANOPTS) -5 $< > $@
 
-dist: core.evo.h
+dist: $(EXE)$(VER).h $(EXE)$(VER).c
 	@echo creating dist tarball
-	@mkdir -p eevo-$(VERSION)
-	@cp eevo.h core.evo.h eevo-$(VERSION)
-	@sed '/^#include "core/d' eevo.c > eevo-$(VERSION)/eevo.c
-	@cat $(CORE) >> eevo-$(VERSION)/eevo.c
-	@tar -cf eevo-$(VERSION).tar eevo-$(VERSION)
-	@gzip eevo-$(VERSION).tar
-	@rm -rf eevo-$(VERSION)
+	@mkdir -p eevo$(VERSION)
+	@cp $^ eevo$(VERSION)
+	@tar -cf eevo$(VERSION).tar eevo$(VERSION)
+	@gzip eevo$(VERSION).tar
+	@rm -rf eevo$(VERSION)
 
 install: all
-	@echo installing $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VERSIONSHORT)
+	@echo installing $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VER)
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
-	@cp -f $(EXE) $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VERSIONSHORT)
-	@chmod 755 $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VERSIONSHORT)
+	@cp -f $(EXE) $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VER)
+	@chmod 755 $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VER)
 	@echo installing $(DESTDIR)$(PREFIX)/bin/$(EXE)
-	@ln -sf $(EXE)$(VERSIONSHORT) $(DESTDIR)$(PREFIX)/bin/$(EXE)
+	@ln -sf $(EXE)$(VER) $(DESTDIR)$(PREFIX)/bin/$(EXE)
 	@echo installing $(DESTDIR)$(PREFIX)/bin/evo
 	@sed -e "s@\./@@g" < evo > $(DESTDIR)$(PREFIX)/bin/evo
 	@chmod 755 $(DESTDIR)$(PREFIX)/bin/evo
@@ -114,7 +120,7 @@ test/test.o: test/tests.h
 test: $(OBJ) $(LIB) test/tests.h test/test.o
 	@echo running tests
 	@echo $(CC) -o test/test
-	@$(CC) -o test/test eevo.o test/test.o $(LDFLAGS)
+	@$(CC) -o test/test $(EXE)$(VER).o test/test.o $(LDFLAGS)
 	@./test/test
 
 .PHONY: all options clean man dist install uninstall test

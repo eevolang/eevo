@@ -1151,14 +1151,16 @@ eevo_free(EevoSt st)
 	arena_free(&st->mem);
 }
 
+char eevo_core[];
+
 /* load lib from string into environment */
 Eevo
-eevo_env_lib(EevoSt st, char* lib)
+eevo_env_lib(EevoSt st)
 {
 	Eevo parsed, expr, ret;
 	char *file = st->file;
 	size_t filec = st->filec;
-	st->file = lib;
+	st->file = eevo_core;
 	st->filec = 0;
 	skip_ws(st, 1);
 	parsed = eevo_pair(st, eevo_sym(st, "do"), Nil);
@@ -1169,11 +1171,3 @@ eevo_env_lib(EevoSt st, char* lib)
 	st->filec = filec;
 	return ret;
 }
-
-
-#include "core/core.c"
-#include "core/string.c"
-#include "core/math.c"
-#include "std/io.c"
-#include "std/os.c"
-#include "std/sys.c"

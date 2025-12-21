@@ -6,10 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "eevo.h"
-#ifndef EEVO_NOCORE
-#  include "core.evo.h"
-#endif
+#include "eevo0.1.h"
 
 /* read, parse, and eval file given as single element list, or empty list for stdin */
 Eevo
@@ -35,7 +32,7 @@ main(int argc, char *argv[])
 	eevo_env_os(st);
 	eevo_env_string(st);
 	eevo_env_sys(st);
-	eevo_env_lib(st, eevo_core);
+	eevo_env_lib(st);
 #endif
 
 	if (argc == 1) {
