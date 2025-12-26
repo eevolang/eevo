@@ -65,11 +65,11 @@ $ eevo -e "(reverse '(1/2 1/4 1/8 1/16))"
 
 ## See Also
 
-eevo(7)
+eevo(5)
 
-See project at <https://edryd.org/projects/eevo>
+View homepage at <https://eevo.pub>
 
-View source code at <https://git.edryd.org/eevo>
+View source code at <https://codeberg.org/eevo/eevo>
 
 ## Author
 

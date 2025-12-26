@@ -392,9 +392,9 @@ opposed to lambda which has meaning only from convention.
 
 eevo(1)
 
-See project at <https://edryd.org/projects/eevo>
+View homepage at <https://eevo.pub>
 
-View source code at <https://git.edryd.org/eevo>
+View source code at <https://codeberg.org/eevo/eevo>
 
 ## Author
 
