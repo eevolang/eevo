@@ -11,10 +11,13 @@ interactive running of commands.
 
 Read *EXPRESSION* as a line of eevo code, evaluate, and print result
 
-#### -r
+#### -i
 
-Launch the REPL prompt. Default if no arguments are given. Useful for
-loading files and then running REPL after. Equivalent to -e '(repl)'
+Enter interactive mode by launching the REPL prompt.
+Default behavior if no arguments are given.
+Explicit option used to load files and then run REPL,
+enabling interaction with the code.
+Equivalent to -e '(repl)'.
 
 #### -h
 

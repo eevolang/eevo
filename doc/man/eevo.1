@@ -1,10 +1,10 @@
-.TH EEVO 1 "July 2025" "eevo 0.1"
+.TH EEVO 1 "December 2025" "eevo 0.1"
 .PP
 .SH NAME
 eevo \- easy expression value organizer
 .PP
 .SH SYNOPSIS
-eevo [-rhv] [-e EXPRESSION] [FILE ...] [-]
+eevo [-ihv] [-e EXPRESSION] [FILE ...] [-]
 .PP
 .SH DESCRIPTION
 .PP
@@ -16,8 +16,8 @@ The default interpreter for the eevo programming language. Read and evaluate all
 Read \fIEXPRESSION\fP as a line of eevo code, evaluate, and print result
 .PP
 .TP
-\fB-r\fP
-Launch the REPL prompt. Default if no arguments are given. Useful for loading files and then running REPL after. Equivalent to -e '(repl)'
+\fB-i\fP
+Enter interactive mode by launching the REPL prompt. Default behavior if no arguments are given. Explicit option used to load files and then run REPL, enabling interaction with the code. Equivalent to -e '(repl)'.
 .PP
 .TP
 \fB-h\fP

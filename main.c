@@ -50,7 +50,7 @@ main(int argc, char *argv[])
 readstr:
 				if ((v = eevo_read(st)))
 					v = eevo_eval(st, st->env, v);
-			} else if (argv[i][1] == 'r') {
+			} else if (argv[i][1] == 'i') {
 				st->file = "(repl)";
 				if ((v = eevo_read(st)))
 					v = eevo_eval(st, st->env, v);
@@ -58,7 +58,7 @@ readstr:
 				fprintf(stderr, "eevo v%s (c) 2017-2025 Ed van Bruggen\n", VERSION);
 				exit(0);
 			} else if (argv[i][1]) { /* unsupported argument or help */
-				fputs("usage: eevo [-rhv] [-e EXPRESSION] [FILE ...] [-]\n", stderr);
+				fputs("usage: eevo [-ihv] [-e EXPRESSION] [FILE ...] [-]\n", stderr);
 				exit(argv[i][1] == 'h' ? 0 : 1);
 			} else { /* single hypen read from stdin */
 				v = read_parse_eval(st, &eevo_nil);
