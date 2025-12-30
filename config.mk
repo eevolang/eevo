@@ -3,9 +3,9 @@ VERSION = 0.1
 
 # core modules and standard library to include
 STD    = std/os.c std/sys.c
-STDEVO = std/io.evo std/doc.evo
-CORE   = std/io.c core/core.c core/string.c core/math.c
-EVO    = core/core.evo core/list.evo core/math.evo $(STDEVO)
+STDEVO = std/doc.evo
+CORE   = core/io.c core/core.c core/string.c core/math.c
+EVO    = core/core.evo core/list.evo core/math.evo core/io.evo
 
 # paths
 PREFIX = /usr/local
