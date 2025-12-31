@@ -9,12 +9,11 @@ LDFLAGS += -g -Og
 endif
 
 EXE = eevo
-SRC = eevo.c main.c
-OBJ = $(SRC:.c=.o)
-LIB = $(CORE:.c=.so)
+LIB = $(STD:.c=.so)
 DOC = doc/eevo.1.md doc/eevo.5.md
 MAN = $(DOC:doc/%.md=doc/man/%)
 
+# markman options for converting markdown to man pages
 MANOPTS = -nCD -t EEVO -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`"
 # VERSION without patch eg 1.2.3 -> 1.2
 VER=$(shell cut -d '.' -f 1,2 <<< $(VERSION))
@@ -32,10 +31,11 @@ core.evo.h: $(EVO)
 	@cat $^ | xxd -i - >> $@
 	@echo ", 0x00};" >> $@
 
-$(EXE)$(VER).c: eevo.c $(CORE) $(STD) core.evo.h
+$(EXE)$(VER).c: eevo.c $(CORE) core.evo.h
 	@echo creating $@
 	@cat $^ > $@
 	@sed -i 's/^#include "eevo.h"/#include "$(EXE)$(VER).h"/' $@
+	@sed -i '/^#include "..\/eevo.h"/d' $@
 
 $(EXE)$(VER).h: $(EVO)
 	@echo creating $@
@@ -51,9 +51,9 @@ $(EXE)$(VER).h: $(EVO)
 
 $(OBJ): $(CORE) eevo.h config.mk
 
-$(LIB): $(CORE)
+$(LIB): $(STD)
 	@echo $(CC) -o $@
-	@$(CC) -shared -o $@ $(EXE)$(VER).o
+	@$(CC) -shared $(CFLAGS) -o $@ $^
 
 $(EXE): $(EXE)$(VER).h $(EXE)$(VER).o main.o
 	@echo $(CC) -o $@
@@ -61,7 +61,7 @@ $(EXE): $(EXE)$(VER).h $(EXE)$(VER).o main.o
 
 clean:
 	@echo cleaning
-	@rm -f $(OBJ) $(EXE) $(EXE)$(VER).? test/test test/test.o
+	@rm -f $(EXE) $(EXE)$(VER).? main.o $(LIB) test/test test/test.o
 
 man: $(MAN)
 

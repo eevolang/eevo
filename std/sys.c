@@ -19,10 +19,26 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 #include <unistd.h>
+#include <string.h>
 #include <sys/wait.h>
 
+#include "../eevo.h"
+
+#define Nil &eevo_nil
+#define True &eevo_true
+#define Void &eevo_void
+
+#define fst(P)  ((P)->v.p.fst)
+#define rst(P)  ((P)->v.p.rst)
+#define snd(P)  fst(rst(P))
+#define ffst(P) fst(fst(P))
+#define rfst(P) rst(fst(P))
+#define rrst(P) rst(rst(P))
+#define nilp(V) ((V)->t == EEVO_NIL)
+
+
 /* Run system command with arguments */
-static Eevo
+Eevo
 prim_sys(EevoSt st, EevoRec env, Eevo args)
 {
 	/* Count arguments */
@@ -67,10 +83,4 @@ prim_sys(EevoSt st, EevoRec env, Eevo args)
 			return (err = WEXITSTATUS(status)) ? eevo_int(st, err) : Void;
 		eevo_warnf("system: %s: Did not exit normally", argv0);
 	}
-}
-
-void
-eevo_env_sys(EevoSt st)
-{
-	eevo_env_name_prim(sys, sys);
 }

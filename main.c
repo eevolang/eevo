@@ -27,11 +27,9 @@ main(int argc, char *argv[])
 	EevoSt st = eevo_env_init(64*1024);
 #ifndef EEVO_NOCORE
 	eevo_env_core(st);
+	eevo_env_string(st);
 	eevo_env_math(st);
 	eevo_env_io(st);
-	eevo_env_os(st);
-	eevo_env_string(st);
-	eevo_env_sys(st);
 	eevo_env_lib(st);
 #endif
 

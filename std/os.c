@@ -24,22 +24,33 @@
 
 /* TODO sys ls, mv, cp, rm, mkdir */
 
-/* change to new directory */
-static Eevo
+#include "../eevo.h"
+
+#define fst(P)  ((P)->v.p.fst)
+#define rst(P)  ((P)->v.p.rst)
+#define snd(P)  fst(rst(P))
+#define ffst(P) fst(fst(P))
+#define rfst(P) rst(fst(P))
+#define rrst(P) rst(rst(P))
+#define nilp(V) ((V)->t == EEVO_NIL)
+
+/* change to different directory */
+Eevo
 prim_cd(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo dir;
 	eevo_arg_num(args, "cd!", 1);
-	dir = fst(args);
+	if (!(dir = eevo_eval(st, env, fst(args))))
+		return NULL;
 	if (!(dir->t & (EEVO_STR|EEVO_SYM)))
 		eevo_warnf("cd!: expected string or symbol, received %s", eevo_type_str(dir->t));
 	if (chdir(dir->v.s))
 		return perror("; error: cd"), NULL;
-	return Void;
+	return &eevo_void;
 }
 
 /* return string of current working directory */
-static Eevo
+Eevo
 prim_pwd(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "pwd", 0);
@@ -50,17 +61,20 @@ prim_pwd(EevoSt st, EevoRec env, Eevo args)
 }
 
 /* exit program with return value of given int */
-static Eevo
+Eevo
 prim_exit(EevoSt st, EevoRec env, Eevo args)
 {
+	Eevo code;
 	eevo_arg_num(args, "exit!", 1);
-	eevo_arg_type(fst(args), "exit!", EEVO_INT);
-	exit((int)fst(args)->v.n.num);
+	if (!(code = eevo_eval(st, env, fst(args))))
+		return NULL;
+	eevo_arg_type(code, "exit!", EEVO_INT);
+	exit((int)code->v.n.num);
 }
 
 /* TODO time formating */
 /* return number of seconds since 1970 (unix time stamp) */
-static Eevo
+Eevo
 prim_now(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "now", 0);
@@ -69,7 +83,7 @@ prim_now(EevoSt st, EevoRec env, Eevo args)
 
 /* TODO time-avg: run timeit N times and take average */
 /* return time in miliseconds taken to run command given */
-static Eevo
+Eevo
 form_time(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo v;
@@ -80,14 +94,4 @@ form_time(EevoSt st, EevoRec env, Eevo args)
 		return NULL;
 	t = clock() - t;
 	return eevo_dec(st, ((double)t)/CLOCKS_PER_SEC*100);
-}
-
-void
-eevo_env_os(EevoSt st)
-{
-	eevo_env_name_prim(cd!, cd);
-	eevo_env_prim(pwd);
-	eevo_env_name_prim(exit!, exit);
-	eevo_env_prim(now);
-	eevo_env_form(time);
 }
