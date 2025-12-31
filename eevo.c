@@ -215,7 +215,6 @@ arena_alloc(EevoArena *a, size_t size_bytes)
 		a->end = a->end->next;
 	if (a->end->size + size > a->end->cap) {
 		/* assert(!a->end->next); */
-		/* a->end->next = new_region(EEVO_STACK_CAP < size ? size : EEVO_STACK_CAP); */
 		a->end->next = new_region(size > EEVO_STACK_CAP ? size : EEVO_STACK_CAP);
 		a->end = a->end->next;
 	}
@@ -224,14 +223,6 @@ arena_alloc(EevoArena *a, size_t size_bytes)
 	void *ret = &a->end->data[a->end->size];
 	a->end->size += size;
 	return ret;
-}
-
-static void
-arena_reset(EevoArena *a)
-{
-	for (EevoStack *r = a->beg; r; r = r->next)
-		r->size = 0;
-	a->end = a->beg;
 }
 
 static void
