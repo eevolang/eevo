@@ -147,52 +147,27 @@ prim_parse(EevoSt st, EevoRec env, Eevo args)
 	return ret;
 }
 
-/* loads eevo file or C dynamic library */
+/* loads dynamic C library */
+/* TODO load static libs as well by passing NULL to dlopen */
 static Eevo
-prim_load(EevoSt st, EevoRec env, Eevo args)
+form_load(EevoSt st, EevoRec env, Eevo args)
 {
-	Eevo tib;
+	eevo_arg_type(fst(args), "load", EEVO_TEXT);
+	eevo_arg_type(snd(args), "load", EEVO_TEXT);
+	char *lib = fst(args)->v.s;
+	char *name = snd(args)->v.s;
+
+	/* Load dynamic library into libh */
 	void *libh;
-	void (*tibenv)(EevoSt);
-	char name[PATH_MAX];
-	const char *paths[] = {
-		"/usr/local/lib/eevo/pkgs/", "/usr/lib/eevo/pkgs/", "./", NULL
-	};
+	if (!(libh = dlopen(lib, RTLD_LAZY)))
+		eevo_warnf("load: could not load '%s':\n; %s", lib, dlerror());
 
-	eevo_arg_num(args, "load", 1);
-	tib = fst(args);
-	eevo_arg_type(tib, "load", EEVO_STR);
-
-	for (int i = 0; paths[i]; i++) {
-		strcpy(name, paths[i]);
-		strcat(name, tib->v.s);
-		strcat(name, ".evo");
-		if (access(name, R_OK) != -1) {
-			char *file = read_file(name);
-			Eevo body = prim_parse(st, env,
-			                       eevo_pair(st, eevo_sym(st, file), Nil));
-			eevo_eval_body(st, env, body);
-			return Void;
-		}
-	}
-
-	/* If not eevo file, try loading shared object library */
-	memset(name, 0, sizeof(name));
-	strcpy(name, tib->v.s);
-	strcat(name, ".so");
-	if (!(libh = dlopen(name, RTLD_LAZY)))
-		eevo_warnf("load: could not load '%s':\n; %s", tib->v.s, dlerror());
-	dlerror();
-
-	memset(name, 0, sizeof(name));
-	strcpy(name, "eevo_env_");
-	strcat(name, tib->v.s);
-	tibenv = dlsym(libh, name);
+	/* Get primitive from library */
+	dlerror(); /* Clear error */
+	EevoPrim pr = (EevoPrim)dlsym(libh, name);
 	if (dlerror())
-		eevo_warnf("load: could not run '%s':\n; %s", tib->v.s, dlerror());
-	(*tibenv)(st);
-
-	return Void;
+		eevo_warnf("load: could not load '%s' from '%s':\n; %s", name, lib, dlerror());
+	return eevo_prim(st, EEVO_FORM, pr, name);
 }
 
 void
@@ -201,5 +176,5 @@ eevo_env_io(EevoSt st)
 	eevo_env_prim(write);
 	eevo_env_prim(read);
 	eevo_env_prim(parse);
-	eevo_env_prim(load);
+	eevo_env_form(load);
 }
