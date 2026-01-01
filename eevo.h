@@ -172,6 +172,25 @@ struct EevoSt_ {
 #define eevo_finc(ST) ST->filec++
 #define eevo_fincn(ST, N) ST->filec += N
 
+/*** Shorthand ***/
+
+/* Common aliases, need to be explicitly enabled since do not have eevo prefix */
+#ifdef EEVO_SHORTHAND
+#  define Nil  &eevo_nil
+#  define True &eevo_true
+#  define Void &eevo_void
+
+#  define fst(P)  ((P)->v.p.fst)
+#  define rst(P)  ((P)->v.p.rst)
+#  define snd(P)  fst(rst(P))
+#  define ffst(P) fst(fst(P))
+#  define rfst(P) rst(fst(P))
+#  define rrst(P) rst(rst(P))
+#  define nilp(V) ((V)->t == EEVO_NIL)
+#  define num(N)  ((N)->v.n.num)
+#  define den(N)  ((N)->v.n.den)
+#endif
+
 /*** Function Declarations ***/
 
 char *eevo_type_str(EevoType t);

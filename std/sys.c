@@ -22,20 +22,8 @@
 #include <string.h>
 #include <sys/wait.h>
 
+#define EEVO_SHORTHAND
 #include "../eevo.h"
-
-#define Nil &eevo_nil
-#define True &eevo_true
-#define Void &eevo_void
-
-#define fst(P)  ((P)->v.p.fst)
-#define rst(P)  ((P)->v.p.rst)
-#define snd(P)  fst(rst(P))
-#define ffst(P) fst(fst(P))
-#define rfst(P) rst(fst(P))
-#define rrst(P) rst(rst(P))
-#define nilp(V) ((V)->t == EEVO_NIL)
-
 
 /* Run system command with arguments */
 Eevo

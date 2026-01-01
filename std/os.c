@@ -24,15 +24,8 @@
 
 /* TODO sys ls, mv, cp, rm, mkdir */
 
+#define EEVO_SHORTHAND
 #include "../eevo.h"
-
-#define fst(P)  ((P)->v.p.fst)
-#define rst(P)  ((P)->v.p.rst)
-#define snd(P)  fst(rst(P))
-#define ffst(P) fst(fst(P))
-#define rfst(P) rst(fst(P))
-#define rrst(P) rst(rst(P))
-#define nilp(V) ((V)->t == EEVO_NIL)
 
 /* change to different directory */
 Eevo
@@ -42,8 +35,7 @@ prim_cd(EevoSt st, EevoRec env, Eevo args)
 	eevo_arg_num(args, "cd!", 1);
 	if (!(dir = eevo_eval(st, env, fst(args))))
 		return NULL;
-	if (!(dir->t & (EEVO_STR|EEVO_SYM)))
-		eevo_warnf("cd!: expected string or symbol, received %s", eevo_type_str(dir->t));
+	eevo_arg_type(dir, "cd!", EEVO_TEXT);
 	if (chdir(dir->v.s))
 		return perror("; error: cd"), NULL;
 	return &eevo_void;

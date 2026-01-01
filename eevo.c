@@ -25,25 +25,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define EEVO_SHORTHAND
 #include "eevo.h"
 
 struct Eevo_ eevo_nil  = { .t = EEVO_NIL };
 struct Eevo_ eevo_true = { .t = EEVO_SYM, .v = { .s = "True" } };
 struct Eevo_ eevo_void = { .t = EEVO_VOID };
-
-#define Nil &eevo_nil
-#define True &eevo_true
-#define Void &eevo_void
-
-#define fst(P)  ((P)->v.p.fst)
-#define rst(P)  ((P)->v.p.rst)
-#define snd(P)  fst(rst(P))
-#define ffst(P) fst(fst(P))
-#define rfst(P) rst(fst(P))
-#define rrst(P) rst(rst(P))
-#define nilp(V) ((V)->t == EEVO_NIL)
-#define num(N) ((N)->v.n.num)
-#define den(N) ((N)->v.n.den)
 
 #define BETWEEN(X, A, B)  ((A) <= (X) && (X) <= (B))
 #define LEN(X)            (sizeof(X) / sizeof((X)[0]))
