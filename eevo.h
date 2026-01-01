@@ -131,11 +131,11 @@ struct EevoSt_ {
 
 /*** Macro Functions ***/
 
-#define eevo_warnf(M, ...) do {                                    \
-	fprintf(stderr, "; eevo: error: " M "\n", ##__VA_ARGS__); \
-	return NULL;                                              \
+#define eevo_warnf(M, ...) do {                                 \
+	fprintf(stderr, "; eevo: error: " M "\n", __VA_ARGS__); \
+	return NULL;                                            \
 } while(0)
-#define eevo_warn(M) do {                           \
+#define eevo_warn(M) do {                          \
 	fprintf(stderr, "; eevo: error: " M "\n"); \
 	return NULL;                               \
 } while(0)
@@ -156,10 +156,10 @@ struct EevoSt_ {
 		eevo_warnf("%s: expected %d argument%s, received %d",             \
 		           NAME, NARGS, NARGS > 1 ? "s" : "", eevo_lstlen(ARGS)); \
 } while(0)
-#define eevo_arg_type(ARG, NAME, TYPE) do {                                     \
-	if (!(ARG->t & (TYPE)))                                                \
-		eevo_warnf(NAME ": expected %s, received %s",                   \
-		                eevo_type_str(TYPE), eevo_type_str(ARG->t));     \
+#define eevo_arg_type(ARG, NAME, TYPE) do {                                  \
+	if (!(ARG->t & (TYPE)))                                              \
+		eevo_warnf(NAME ": expected %s, received %s",                \
+		                eevo_type_str(TYPE), eevo_type_str(ARG->t)); \
 } while(0)
 
 #define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(st, EEVO_PRIM, prim_##FN, #NAME))
