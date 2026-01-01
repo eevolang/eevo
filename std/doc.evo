@@ -102,8 +102,8 @@ def docstr-reg
       "parse(string)"
       "Parse eevo value from given string")
     (load
-      "load(lib)"
-      "Loads the library given as a string")
+      "load(lib proc)"
+      "Return primitive procedure from library. Allows importing code from the host language")
     (cd!
       "cd!(dir)"
       "Change directory")

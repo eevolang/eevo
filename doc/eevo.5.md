@@ -300,7 +300,7 @@ Return boolean on if symbol is defined in the environment.
 
 ### load
 
-Loads the library given as a string.
+Return primitive procedure from library. Allows importing code from the host language.
 
 ### error
 
