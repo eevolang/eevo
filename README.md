@@ -272,7 +272,7 @@ $ sudo make install
 
 eevo can also be statically embedded as a library in other C programs with
 *almost* zero dependencies.
-Simply drop `eevo0.1.c`, `eevo0.1.h`, into your project to use the
+Simply drop `eevo0.2.c`, `eevo0.2.h`, into your project to use the
 necessary functions for your program.
 
 - Dependencies:

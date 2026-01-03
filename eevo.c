@@ -1092,7 +1092,7 @@ eevo_env_init(size_t cap)
 	eevo_env_add(st, "Nil", Nil);
 	eevo_env_add(st, "Void", Void);
 	eevo_env_add(st, "bt", Nil);
-	eevo_env_add(st, "version", eevo_str(st, "0.1"));
+	eevo_env_add(st, "version", eevo_str(st, "0.2.0"));
 
 	/* Types */
 	st->types[0]  = eevo_type(st, EEVO_VOID,  "TVoid", NULL);

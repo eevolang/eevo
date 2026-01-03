@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "eevo0.1.h"
+#include "eevo0.2.h"
 
 /* read, parse, and eval file given as single element list, or empty list for stdin */
 Eevo

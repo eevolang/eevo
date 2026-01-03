@@ -106,8 +106,8 @@ char *tests[][2] = {
 	{ "(Str { a: 1  b: 2 })",          "\"a:1b:2\""                 },
 
 	{ "strfmt",                             NULL                              },
-	{ "(strfmt \"foo\")",                "\"foo\""                         },
-	{ "(strfmt \"version: {version}\")", "\"version: 0.1\""                },
+	{ "(strfmt \"foo\")",                   "\"foo\""                         },
+	{ "(strfmt \"version: {version}\")",    "\"version: 0.2.0\""              },
 	{ "(def ship \"planet express\")",      "Void"                            },
 	{ "f\"all aboard {ship}!!\")",          "\"all aboard planet express!!\"" },
 	{ "f\"4! = {factorial(4)}\")",          "\"4! = 24\""                     },

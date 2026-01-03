@@ -7,7 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../eevo0.1.h"
+#include "../eevo0.2.h"
 
 #include "tests.h"
 
