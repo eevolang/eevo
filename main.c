@@ -53,7 +53,7 @@ readstr:
 				if ((v = eevo_read(st)))
 					v = eevo_eval(st, st->env, v);
 			} else if (argv[i][1] == 'v') { /* version and copyright info */
-				fprintf(stderr, "eevo v%s (c) 2017-2025 Ed van Bruggen\n", VERSION);
+				fprintf(stderr, "eevo v%s (c) 2017-2026 Ed van Bruggen\n", VERSION);
 				exit(0);
 			} else if (argv[i][1]) { /* unsupported argument or help */
 				fputs("usage: eevo [-ihv] [-e EXPRESSION] [FILE ...] [-]\n", stderr);
