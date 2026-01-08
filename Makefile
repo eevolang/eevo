@@ -75,11 +75,8 @@ doc/man/%.5: doc/%.5.md $(EXE)
 
 dist: $(EXE)$(VER).h $(EXE)$(VER).c
 	@echo creating dist tarball
-	@mkdir -p eevo$(VERSION)
-	@cp $^ eevo$(VERSION)
-	@tar -cf eevo$(VERSION).tar eevo$(VERSION)
-	@gzip eevo$(VERSION).tar
-	@rm -rf eevo$(VERSION)
+	@tar -cf $(EXE)-$(VERSION).tar $^
+	@gzip $(EXE)-$(VERSION).tar
 
 install: all
 	@echo installing $(DESTDIR)$(PREFIX)/bin/$(EXE)$(VER)
