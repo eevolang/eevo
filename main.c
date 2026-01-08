@@ -56,7 +56,7 @@ readstr:
 				fprintf(stderr, "eevo v%s (c) 2017-2026 Ed van Bruggen\n", VERSION);
 				exit(0);
 			} else if (argv[i][1]) { /* unsupported argument or help */
-				fputs("usage: eevo [-ihv] [-e EXPRESSION] [FILE ...] [-]\n", stderr);
+				fputs("usage: eevo -h | -v | [-i] [-e EXPRESSION] [FILE ...] [-]\n", stderr);
 				exit(argv[i][1] == 'h' ? 0 : 1);
 			} else { /* single hypen read from stdin */
 				v = read_parse_eval(st, &eevo_nil);
