@@ -152,6 +152,7 @@ prim_parse(EevoSt st, EevoRec env, Eevo args)
 static Eevo
 form_load(EevoSt st, EevoRec env, Eevo args)
 {
+	eevo_arg_num(args, "load", 2);
 	eevo_arg_type(fst(args), "load", EEVO_TEXT);
 	eevo_arg_type(snd(args), "load", EEVO_TEXT);
 	char *lib = fst(args)->v.s;
