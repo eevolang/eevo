@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 char *tests[][2] = {
 
 	{ "self",        NULL          },

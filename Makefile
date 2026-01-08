@@ -61,7 +61,7 @@ $(EXE): $(EXE)$(VER).h $(EXE)$(VER).o main.o
 
 clean:
 	@echo cleaning
-	@rm -f $(EXE) $(EXE)$(VER).? main.o $(LIB) test/test test/test.o
+	@rm -f $(EXE) $(EXE)$(VER).? $(EXE).o main.o $(LIB) test/test test/test.o
 
 man: $(MAN)
 
@@ -117,10 +117,10 @@ uninstall:
 
 test/test.o: test/tests.h
 
-test: $(OBJ) $(LIB) test/tests.h test/test.o
-	@echo running tests
+test: $(EXE)$(VER).h $(EXE)$(VER).o test/tests.h test/test.o
 	@echo $(CC) -o test/test
-	@$(CC) -o test/test $(EXE)$(VER).o test/test.o $(LDFLAGS)
+	@$(CC) -o test/test $^ $(LDFLAGS)
+	@echo running tests
 	@./test/test
 
 .PHONY: all options clean man dist install uninstall test
