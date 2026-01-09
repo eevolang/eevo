@@ -292,7 +292,7 @@ define a self evaluating symbol.
 
 ### undefine!
 
-Remove symbol from environment. Errors if symbol is not defined before.
+Remove symbol from environment. Errors if symbol was not defined previously.
 
 ### defined?
 
