@@ -109,7 +109,7 @@ char *tests[][2] = {
 
 	{ "strfmt",                             NULL                              },
 	{ "(strfmt \"foo\")",                   "\"foo\""                         },
-	{ "(strfmt \"version: {version}\")",    "\"version: 0.2.0\""              },
+	{ "(strfmt \"version: {version}\")",    "\"version: 0.2.1\""              },
 	{ "(def ship \"planet express\")",      "Void"                            },
 	{ "f\"all aboard {ship}!!\")",          "\"all aboard planet express!!\"" },
 	{ "f\"4! = {factorial(4)}\")",          "\"4! = 24\""                     },
