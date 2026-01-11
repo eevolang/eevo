@@ -54,6 +54,7 @@ def builtin?(x)     (or primitive?(x) specialform?(x))
 def procedure?(x)   (or builtin?(x) (or function?(x) macro?(x)))
 def rational?(x)    (or integer?(x) ratio?(x))
 def number?(x)      (or rational?(x) decimal?(x))
+def op?(x)          (and symbol?(x) (in x OP_CHARS))
 
 def Bool(x)
   if x
