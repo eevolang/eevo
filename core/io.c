@@ -147,25 +147,30 @@ prim_parse(EevoSt st, EevoRec env, Eevo args)
 	return ret;
 }
 
-/* loads dynamic C library */
-/* TODO load static libs as well by passing NULL to dlopen */
-static Eevo
+/* Load C function from library, included dynamically or statically */
+Eevo
 form_load(EevoSt st, EevoRec env, Eevo args)
 {
+	EevoPrim pr;
+	void *libh;
 	eevo_arg_num(args, "load", 2);
 	eevo_arg_type(fst(args), "load", EEVO_TEXT);
 	eevo_arg_type(snd(args), "load", EEVO_TEXT);
 	char *lib = fst(args)->v.s;
 	char *name = snd(args)->v.s;
 
+	/* First try loading primitive statically */
+	libh = dlopen(NULL, RTLD_LAZY);
+	if ((pr = (EevoPrim)dlsym(libh, name)))
+		return eevo_prim(st, EEVO_FORM, pr, name);
+
 	/* Load dynamic library into libh */
-	void *libh;
 	if (!(libh = dlopen(lib, RTLD_LAZY)))
 		eevo_warnf("load: could not load '%s':\n; %s", lib, dlerror());
 
 	/* Get primitive from library */
 	dlerror(); /* Clear error */
-	EevoPrim pr = (EevoPrim)dlsym(libh, name);
+	pr = (EevoPrim)dlsym(libh, name);
 	if (dlerror())
 		eevo_warnf("load: could not load '%s' from '%s':\n; %s", name, lib, dlerror());
 	return eevo_prim(st, EEVO_FORM, pr, name);
