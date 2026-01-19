@@ -1,0 +1,171 @@
+* DONE v0.1 [4/4]
+  - [X] ~defined?~
+  - [X] ~undefine!~
+  - [X] remove ~set!~
+  - [X] prefix for vars in header
+    - [X] ~type_str~
+    - [X] ~list_len~
+    - [X] ~Val~ -> ~Evo~
+    - [X] ~Rec~
+    - [X] ~Entry~
+    - [X] ~Prim~
+    - [X] ~c*r~
+    - [X] ~nilp~
+    - [X] ~den~/~num~
+
+* DONE v0.2 [12/14]
+  - [X] eevo rename
+    - [X] tisp -> eevo
+    - [X] Val -> Evo, Rec, Entry, Prim
+    - [X] tib -> core
+    - [X] man
+    - [X] ~mk_*~
+    - [X] car, cdr, cons
+  - [X] tail call
+  - [X] magic constants defines
+    - [ ] customizable
+    - [ ] default rec size
+    - [ ] parsing chars etc
+      - just like SYM_CHARS, OP_CHARS
+  - [X] finalize C standard (C99)
+  - [-] rm all math/lisp jargon
+    - [X] car/cdr -> fst/rst
+    - [X] cons -> Pair
+    - [ ] Nil -> False
+    - [ ] Void -> Nil
+    - [X] lambda -> Func
+  - [X] simplify language
+    - [X] rm dup reading, mv to io.c
+    - [X] mv prims to core.c
+  - [X] unity build
+    - [X] amalgamated src/header
+  - [X] support other int bases
+    - [X] hex
+    - [X] binary
+    - [X] octo
+  - [X] rewrite core in new syntax
+  - [X] test coverage
+    - [X] split into test.h
+  - [X] fix val_string
+    - [X] merge w/ eevo_print
+    - [X] fix display of improper lists
+    - [X] fix strfmt
+  - [X] help cmd
+  - [X] global mem stack
+
+  - [-] doc
+    - [X] update eevo.7
+      - [X] 7 -> 5
+    - [X] new README
+    - [ ] italicize arguments in doc strings
+
+* v0.3 [1/13]
+  - [ ] rewrite syntax parser
+    - [ ] separate scanner from parser
+    - [ ] fix line reading
+    - [ ] infix
+    - [ ] rm filec and file in state
+      - [ ] replace w/ EevoStr passed thru ~read_*~
+  - [ ] macro expand
+  - [ ] lexical mem stack
+  - [-] ~system~
+    - [X] ~sys~
+    - [ ] ~$~ macro
+      - [ ] quote args by default
+      - [ ] eval unquoted args
+      - [ ] glob
+  - [ ] import
+    - [ ] seperate std
+    - [ ] loads file into Rec
+  - [ ] integration tests
+
+  - [ ] SI prefixes
+  - [ ] env arg for eval
+  - [ ] remove ptrs from typedefs
+
+  - [-] mem
+    - [X] stack region
+    - [ ] ARC
+      - [ ] track and refs
+      - [ ] free
+  - [-] code changes
+    - [X] install version
+    - [ ] use Bool
+    - [X] mv core from Makefile to config.mk
+    - [ ] append -> cat, write True -> append
+
+  - [ ] better strfmt
+    - [ ] ~@~ syntax
+    - [ ] sections
+    - [ ] string interpolation/templates as function call
+      - "hey @name" => ("hey @1" name)
+
+* v0.4 [0/4]
+  - [-] types
+    - [X] first class types
+      - [ ] merge Nil, Void
+      - [ ] rm need for types[]
+        - use intern sys / env
+      - [ ] rm need to tsp_type_str
+        - replace w/ types[v->t]->name
+    - [ ] type inference
+    - [ ] static type checker
+    - [ ] represent typed val as ~val :: Type~
+    - [ ] separate types from constructors
+    - [ ] subtyping
+  - [ ] new func model
+    - [ ] pattern matching
+    - [ ] polymorphism and operator overloading
+    - [ ] optional arguments
+      - with pattern matching or ~def func(var | Nil)~
+    - [ ] unify with Recs
+    - [ ] list of args and their bodies (arg1: body1 arg2: body2)
+      - match returns Func def func (match (x y z): z + y + z (x y): x * y)
+    - [ ] print repl docstring on first start
+      - println(doc(repl)) recur loop { %: ans }
+    - def foo (x): x  (x y): x + y
+  - [ ] better error messages
+    - [ ] disp line nums
+    - [ ] backtrace
+    - [ ] prettify
+  - [ ] save/open
+    - serialize Evo object
+    - save rec for eevo image
+
+* v0.5 [0/12]
+  - [ ] rework numbers
+    - [ ] replace with NaN boxing
+    - [ ] mk ratio eevo type
+    - [ ] int as subtype of dec
+  - [ ] rework strings
+    - [ ] include length
+    - [ ] non-null terminated, enables slices
+    - [ ] reimplement libc str func
+      - strchr strcmp strspn strcspn strcat strndup
+    - [ ] empty string as nil
+  - [ ] rework recs
+    - [ ] redo rec parsing to make it first class, not a pair
+    - [ ] lazy
+    - [ ] ENV field
+    - [ ] any val as rec key
+  - [-] rm posix and gnu extensions
+    - [X] rm DEFAULT_SOURCE BSD_SOURCE
+    - [ ] test on many diff compilers
+  - [ ] unify def let recur
+  - [ ] try form
+    - replace defined?
+
+* v0.6 [0/7]
+  - [ ] pure functions
+    - [ ] IO and OS monads
+  - [ ] UTF-8
+    - [[https://libs.suckless.org/libgrapheme/][libgrapheme]]
+    - https://github.com/sheredom/utf8.h/
+  - [ ] unify Str and Lst/Rec/Proc
+    - ~"hey" = { 0: 68 1: 65 2: 79 } = { 68 65 79 } = [ h e y ]~
+    - ~inc = { 0: 1  1: 2  2: 3 ... }~
+  - [ ] gleam's ~use~
+  - [ ] sandbox
+    - include $PATH and $HOME (or ./) unless specified otherwise ??
+    - --allow/deny-read/write/net (eg deno)
+

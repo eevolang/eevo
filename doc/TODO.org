@@ -1,0 +1,398 @@
+* Syntax [7/17]
+   - [ ] infix
+     - [ ] seperate scanner / parser
+   - [X] line application
+   - [X] ~func[args]~
+     - [X] change to ~func(args)~
+   - [X] ~v.func[args]~
+   - [X] ~key: val~
+   - [X] ~rec::val~
+   - [X] ~rec:[val]~
+     - [X] replace with ~rec(val)~
+     - [X] ~func:(lst)~ -> ~(map func lst)~
+   - [X] ~rec{foo: bar}~ to extend rec
+     - [ ] ~func{bar}~ to create partial function, inc = (+){1}
+     - [ ] change to apply rec, union op to extend
+   - [-] new symbols
+     - [X] ~.~ -> ~...~
+     - [ ] ~::~ -> ~.~
+     - [ ] =~sym~= -> =`sym`=
+     - [ ] ~`~ -> ~'~
+     - [ ] ~,~ -> ~@~
+     - [ ] ~@~ -> ~->~
+     - [ ] ~>>~ -> ~|>~
+   - [ ] [1 ... 3 4 5] -> [1 [3 4 5]]
+   - [ ] ~:~ at end of line resumes line reading
+   - [ ] ~...~ w/o rst element defaults to ~_~
+     - ~(1 2 3 ...)~ -> ~(1 2 3 ... _)~
+   - [ ] require closing ~'~ and ~`~
+      - ~'(a b c)~ -> ~'a b c'~
+      - ~'oui~ -> ~'oui'~
+   - [ ] ~'[hey hi hello]~ -> ~['hey 'hi 'hello]~
+   - [ ] ~sym"str"~ -> ~sym("str")~, eg ~html"hello"~ ~sql"query"~
+     - under str namespace to enable ~f~
+   - [ ] couple predefined infix ops that are not assigned to anything?
+     - allow only a couple custom infix ops?
+   - [ ] commas as whitespace
+
+
+* Records [3/12]
+  - [ ] first class env
+  - [X] namespaces
+  - [X] remove get
+  - [X] Table/Hash -> Rec
+  - [ ] any type as key
+  - [ ] lazy
+    - merge Prim/Form, Func/Macro
+    - only eval vals when accessed
+    - cache / memorize, like string interning
+  - [ ] sets
+    - value is key, or nil?
+  - [ ] enforce total coverage when applicable
+  - [ ] modules with returned Recs
+  - [ ] ~{ x y z a: 1 b: 2 }~ -> ~{ fst: x  rst: [y z]  a: 1  b: 2 }~
+    - func{ x y a: 1 b: 2 } calls func(x y) with function env extended w/ new one
+  - [ ] ~'{ ... }~ return Rec not List
+    - eval Rec and parse time
+  - [ ] generalize to be sets of single values, make key/val a pair element
+    - [ ] then arrays can use the same obj
+  - [ ] access self with =.= key
+    - abillity to set parent as =..=
+    - mimic circular refs?
+
+*** functions [2/3]
+    - [X] recmerge extend
+      - ~rec{ key: val }~
+      - replce w/ rec_add when key = Rec
+        - generalize x(y) x{y} syntax
+      - [ ] if fst arg = list then call func with extended env
+    - [X] keys/values/records
+      - keys: fst <> records, values: rst <> records
+    - [ ] fst/rst support ?
+*** special values [0/4]
+    - [ ] size
+    - [ ] len
+    - [ ] this
+    - [ ] ~#~ list of rec ordering
+*** pattern matching
+    - function call as attern matching
+    - eg:
+      - [[https://clojuredocs.org/clojure.core/case][clojure like case]]
+      - racket like match
+      - gleam case
+      - http://magpie-lang.org/patterns.html
+    - switch -> match
+      - ~= for pattern eq
+    - first class
+    - regex
+
+
+* Types [1/10]
+  - [X] first class
+  - [-] types
+    - [X] Type
+    - [ ] Ratio
+    - [ ] Err
+    - [ ] Result Either
+    - [ ] Maybe
+    - [ ] Dict = Rec[Str Any]
+    - [ ] Vec = Rec[Int Any]
+    - [ ] Char = Int
+        differnt print func
+  - [ ] rm ~typeof~
+  - [ ] static type checker
+    - [ ] type inference
+    - [ ] type annotation w/ ~::~
+  - [ ] algebraic types
+    - [ ] product types w/ ~&~
+      - anon Recs? are just List
+      - also just cons
+      - set intersection
+    - [ ] sum types w/ ~|~
+      - set union
+    - [ ] ~Func~ (~=>~) returns type (exponential type)
+      - set of all possible mappings from arg type to body type
+  - [ ] x ~?~ y, x is a subset of y
+    - "string" ? Str
+      - x <= y := x < y or x = y
+        eg concrete of type or type itself, "str" | Str
+    - { a: 1 } ? { a: 1 b: 2}
+  - [ ] ?Type => Type | Nil
+  - [ ] lua's userdata to represent any C type
+
+
+* ARC [0/4]
+   - [ ] count refs
+   - [ ] free when refs = 0
+   - [ ] Recs as arenas
+      - interning system
+   - [ ] opportunistic in place mutation when refs <= 1
+     - static in place detection
+     - if list is not refernced again, it is safe to mutate in place
+     - [ ] def
+     - [ ] undefine
+   - [ ] def and undef pure
+     - only mutate if refs <= 1
+     - otherwise extend
+
+
+* core
+** core [2/2]
+   - [X] split into list
+   - [X] mv prim/forms to core.c
+
+** list [0/5]
+    - [ ] reduce fold
+    - [ ] find
+    - [ ] filter -> where
+    - [ ] js: fill, some, includes, indexOf
+    - [ ] https://docs.racket-lang.org/reference/pairs.html
+
+** string [0/2]
+   - [ ] split support multi characters
+     - give list to split any
+   - [ ] python str stdlib
+
+*** strfmt [1/7]
+    - [X] strformat -> strfmt
+    - [ ] ~f"@(sqr 2)"~ syntax
+    - [ ] diff filters to display output
+      - [ ] python like !r to use display not print
+        - ~#@d val => display[val]~
+        - or just d mapped to display
+      - [ ] html escaping
+    - [-] mustache parity
+      - [ ] sections
+        - ~@%(x ...) y ... %@~ -> ~@(x ... f"y ...")~
+        - ~{{ when person }} hello {{ end }}~
+          - ~@(when person "hello")~
+        - ~{{ unless person }} hello {{ end }}~
+        - ~{{ foreach person in persons }} hello {{ person::name }} {{ end }}~
+      - [ ] comments
+        - ~{{ ; comment }}~
+      - [X] partials
+        - have str in env of loaded file
+      - [ ] change delimiters?
+    - [ ] eruby
+    - [ ] *strfmt* env
+      - limited environment
+      - shadows funcs to be sandboxed
+        - no effects
+      - only pure funcs, no monads
+      - IO monad is not printable, so can't use in strfmt
+
+*** str templ
+    - ~strfmt: (templ print)~
+    - ~strfmt: (templ display)~
+    - ~htmlfmt: (templ html.escape)~
+    - ~sqlfmt: (templ sql.escape)~
+
+** math [0/13]
+   - [ ] gcd lcm
+   - [ ] quotient remainder modulo
+   - [ ] rewrite math like lisp-in-c
+   - [ ] =+ - / *= work element wise on matrixes ?
+   - [ ] sum and product, over lists and their own functions w/ bounds
+   - [ ] mod w/ decimal returns deicmal
+   - [ ] =+ - / * ^= defed as indiviual prims for each type, make generic with all of them
+   - [ ] macros for diff bases
+     hexadecimal octal binary
+   - [ ] Nan and Inf
+   - [ ] lua's fmod fexpr modf
+   - [ ] =+, *, ^= have overloads for Num, Type, Sym
+   - [ ] quickutil math
+   - [ ] bitwise shift: shr shl
+   - [ ] rem or =//= or div (int division)
+
+** infix [0/6]
+   - [ ] better insertion of macro
+   - [ ] eval and read time
+   - [ ] support =a < x < b= -> =a < x and x < b=
+   - [ ] .. for range, ... for inclsuive range (or ..=)
+   - [ ] =*|>= for piping stderr, =&|>= for stderr and stdout
+   - [ ] (+) to return op func
+
+* std
+  - [X] seperate from core
+  - [ ] random
+    - [ ] random.int, random.choice
+  - [ ] CLI
+  - [ ] http
+  - [ ] sockets
+
+** doc
+   - [ ] documenation generator
+
+** io
+   - print:
+     - write 'stdout -> print
+     - write 'stderr -> printerr
+     - println -> print, print -> printnnl, printraw, printout
+   - write True -> write-append log ?
+     - [X] display
+     - [X] replace (quote foo) w/ 'foo
+       - [ ] recursive
+       - [ ] newlines in Str as `\n`
+       - [ ] print which forces sci notation
+       - [ ] diff print which pretifies, indents newlines to be code readable
+     - parse-lossless: parse but convserve comments/whitespace
+       - first class comments?
+     - [ ] Path type
+       - expand tilde to $HOME
+       - addition with ~/~, insert ~"/"~
+         - path/to/file => "path/to/file"
+         - how to handle leading ~/~?
+   - turn display into pretty print
+
+** math
+   - [ ] divide math into core and stdlib
+
+** os
+  - [ ] rename os.c back to time.c
+
+** system [0/12]
+  system = {
+      ls: Prim  cd: Prim ...
+      else: args => make func from system call }
+
+   - [ ] don't eval symbols given as args, bultin quasiquote
+   - [ ] if given sym not pair, run getenv
+     - [ ] `$~` ⇒ `$HOME`
+   - [ ] if given binary in $PATH return wrapper func
+     - [ ] wrapper macro pass args to system call
+     - [ ] diff parsing rules to keep file-name.txt as signal symbol
+   - [ ] def $ system
+     - `$cmds` as macro shorthand
+     - $(ls -a) to call system's ls command
+     - $.cd("folder") to call eevo's cd func in sys
+   - [ ] pre auto generate all functions as closures in system
+     - found with `compgen -c`
+   - [ ] sbase
+     - [ ] ll ret rec of files with: name, size, date, permisions
+     - [ ] ls = ll |> where 'name
+     - [ ] pwd
+     - [ ] cat/bat
+     - [ ] grep
+       - support ignoring .gitignore
+     - [ ] sleep
+     - [ ] replacement: sed expr echo seq head tail wc xargs sort cut
+   - [ ] 9base
+     - [ ] replacement: ascii awk mk rc
+   - [-] cd
+     - [X] chdir
+     - [ ] cd => cd $HOME
+     - [ ] cd - => cd $OLDWD
+     - [ ] cd -L / -P ?
+   - [ ] safe system
+     - wrapper around sys to tell user what commmands are about to be run
+     - import instead of sys for most usecases where code not trusted
+   - wasm import
+     - [ ] fd
+       - [ ] ~ls := fd -d 1~
+       - [ ] ~la := fd -d 1 -HI~
+     - [ ] grep: rg ag
+
+* libs
+** bindings
+   - raylib
+   - pandoc
+
+** read/write
+*** data
+**** json jsonl
+      - yaml
+      - flat json (eg gron)
+**** csv tsv ssv xsv
+      - tool to valid csv based on typed schema
+**** toml ini
+      - [ ] datetime type
+**** hdf5
+**** eml ics vcf
+*** markup
+**** html xml
+      - x-expressions
+      - htmx
+      - pug
+      - [[https://github.com/wolfgangj/stic][stic]]
+      - BeautifulSoup
+**** css
+*** db
+**** sql (sqlite)
+      - sqlc
+      - SQLAlchemy
+**** recutil
+**** xlsx xls
+*** compilers
+**** wasm
+**** QBE
+**** scheme
+**** bash make
+**** c/zig
+
+
+
+** regex
+   - awk replicate
+     - sub/gsub
+     - match
+     - substr
+   - awk's patterns
+
+   - %start => "\n"
+   - %end => "\n"
+   - %.  1 char
+   - %*  >0 char
+   - %+  >1 char
+   - %ws whitespace
+   - %!ws not whitespace
+   - %dig digit { 0..9 }
+
+** lit
+   - [-] literate programming translator
+     - [X] .evo -> .md
+     - [X] .evo -> .html
+     - [ ] .md -> .evo
+     - [ ] .evo -> .org
+     - [ ] .org -> .evo
+   - [[https://github.com/tumashu/el2org/blob/master/el2org.el][eg]]
+   - single ; outside of code blocks is ignored / blocked out
+     - double ;; is paragraph, triple heading, quad subheading
+   - option to collopse code blocks by default instead of inline code
+   - option to print summary at end
+   - option to hide code by deault
+     - inline comment to collopse code block
+
+** package manager
+   - [ ] ~pkg~ command
+    - [ ] install
+    - [ ] remove / uninstall
+    - [ ] show
+    - [ ] search
+    - [ ] update
+    - [ ] refresh
+    - [ ] clean
+   - no recursive dependencies
+     - must explicitly include dependencies needed for libraries
+   - must specify version tag to commit
+     - forces only stable relases in package list
+     - allows for review of commit diffs to be done
+   - offers expanding user sourced ultity libraries
+   - inside eevo like julia
+
+* CLI
+  - move to `cli/`
+  - replace rlwrap with linenoise static lib
+  - autocomplete file names (-c)
+  - highlight prompt
+  - autocomplete all words seen in input or output (-r)
+  - rlwrap -q
+  - multi line edit
+  - if line cleared delete from history
+    - web: delete entry from history button
+  - =eevo FUNC ...= eval a expr by defualt
+    - fallback to file if .evo appened
+    - -f to run file
+  - set =eevo.keys= to key map
+  - cli args Str <-> eevo rec
+  - load commands from EEVO_PATH
+
