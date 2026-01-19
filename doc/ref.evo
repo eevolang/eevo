@@ -1,0 +1,165 @@
+;;;; tour eevo
+
+;;; Hello World
+
+;; Display hello world on the screen:
+
+; good programmers comment their code
+println "Hello World"
+
+;;;; Numbers
+
+;; Numbers can be integers:
+
+5
+1234
+
+;; Which can use scientific notation:
+
+4e3    ; = 4000
+543e5  ; = 54300000
+789e-3 ; = 0
+
+;; Integers can also use different bases for binary, octal, and hexadecimal (base 2, 8, and 16):
+
+0b10      ; = 2
+0b101     ; = 5
+0B110110  ; = 54
+0o10      ; = 8
+0O1337    ; = 735
+0O1234    ; = 668
+0X10      ; = 16
+0XaF      ; = 175
+0xABCDEF  ; = 11259375
+
+;; Numbers can also be decimals, with scientific notation:
+
+0.3          ; = 0.3
+3.14         ; = 3.14
+.13          ; = 0.13
+123.4e-3     ; = 0.1234
+2.99792458E8 ; = 299792458.0
+
+;; Or fractions:
+
+1/3 ; = 1/3
+6/4 ; = 3/2
+4/2 ; = 2
+
+;;;; Booleans
+
+;; Either true or false. All values except Nil are truthy.
+
+True
+False ; = Nil
+Nil
+
+;;;; Strings
+
+;; A string of characters to form text:
+
+"Text characters"
+
+;; To include special characters use a backslash:
+
+"Text with \"quotes\",\n\tAnd a newline with a tab"
+
+;;;; Lists
+
+;; Lists are chains of pairs containing any values, ending in Nil.
+;; The following are all equivalent:
+
+[1 "b" 'c 4.0 15/3]
+(list 1 "b" 'c 4.0 15/3)
+'(1 ... ("b" ... ('c ... (4.0 ... (15/3 ... Nil)))))
+
+;;;; Records
+
+;; Records are unordered sets of key-values pairs.
+;; Currently the value can be any type, while the key must be a string or symbol.
+;; Soon any value can be the key as well.
+
+def jobs { McNulty: 'cop  Omar: "stickup man"  Stringer: 'dealer }
+jobs::Omar     ; = "stickup man"
+jobs::Stringer ; = 'dealer
+jobs::McNulty  ; = 'cop
+
+;;;; Functions
+
+;; A function is an object which transforms one value into another.
+;; For example, the inc function takes a list of a single number and returns that number
+;; incremented by one:
+
+inc 54 ; = 55
+
+;; Functions can also accept multiple arguments:
+
+count 2 [1 2 3/2 4/5 6/3 7/8 10/5] ; = 3
+
+;; Or they could take any number of arguments
+
+= Nil False '() (list) [] ; = True
+
+;; Functions can also take other functions as arguments.
+;; For example, the following applies the square function to every element in the list
+
+map sqr [1 2 3 4] ; = [1 4 9 16]
+
+;; Putting it all together, a function with many arguments of other functions,
+;; returning a new function which can be applied to arguments:
+
+(compose - sqrt +) 8 1 ; = -3
+
+;;;; Variables
+
+;; Variables store values in a named symbol.
+
+def x 4                           ; Integers
+def pi-approx 3.14                ; Decimals
+def pi-better 22/7                ; Ratios
+def active? True                  ; Boolean
+def a Nil                         ; Nil, empty
+def greeting "hello world"        ; Strings
+def func 'sum                     ; Symbols
+def best [1968 ... 1.12]          ; Pair
+def ages [23 47 12 59]            ; Lists
+def prices [7.50 8 3.25 ... 10]   ; Improper lists
+def people { bob: 23  alice: 47 } ; Records
+
+;;;; Operators
+
+;;; Arithmetic
+
+def x 12
+def y 6
++ x y ; = 18
+- y x ; = -6
+* x y ; = 72
+/ y x ; = 1/2
+
+def z (* x (- y 3)) ; = 36
+- z 5.0             ; = 31.0
+* z 1/3             ; = 12
+
+;;; Comparison
+
+> x y ; = True
+< x y ; = False
+= x y ; = False
+= y y ; = True
+/= x y ; = True
+
+;;; Logical
+
+and True False ; = False
+or  True False ; = True
+not True       ; = False
+not False      ; = True
+
+;; Logical operators are short circuiting, so not all arguments will be evaluated if not required:
+
+or active? (error "Will not be called since or already knows it must be true")
+
+;;;; Control Flow
+
+if (/= x y) "x does not equal y" "x does equal y"
