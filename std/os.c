@@ -29,7 +29,7 @@
 
 /* change to different directory */
 Eevo
-prim_cd(EevoSt st, EevoRec env, Eevo args)
+std_cd(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo dir;
 	eevo_arg_num(args, "cd!", 1);
@@ -43,7 +43,7 @@ prim_cd(EevoSt st, EevoRec env, Eevo args)
 
 /* return string of current working directory */
 Eevo
-prim_pwd(EevoSt st, EevoRec env, Eevo args)
+std_pwd(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "pwd", 0);
 	char cwd[PATH_MAX];
@@ -54,7 +54,7 @@ prim_pwd(EevoSt st, EevoRec env, Eevo args)
 
 /* exit program with return value of given int */
 Eevo
-prim_exit(EevoSt st, EevoRec env, Eevo args)
+std_exit(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo code;
 	eevo_arg_num(args, "exit!", 1);
@@ -67,7 +67,7 @@ prim_exit(EevoSt st, EevoRec env, Eevo args)
 /* TODO time formating */
 /* return number of seconds since 1970 (unix time stamp) */
 Eevo
-prim_now(EevoSt st, EevoRec env, Eevo args)
+std_now(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "now", 0);
 	return eevo_int(st, time(NULL));
@@ -76,7 +76,7 @@ prim_now(EevoSt st, EevoRec env, Eevo args)
 /* TODO time-avg: run timeit N times and take average */
 /* return time in miliseconds taken to run command given */
 Eevo
-form_time(EevoSt st, EevoRec env, Eevo args)
+std_time(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo v;
 	clock_t t;

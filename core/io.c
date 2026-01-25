@@ -23,6 +23,8 @@
 #include <limits.h>
 #include <unistd.h>
 
+#define MAX_IDENTIFIER_LEN 64
+
 /* count number of parenthesis, brackets, and curly braces */
 /* FIXME makes reading O(2N) replace w/ better counting sys */
 static int
@@ -147,32 +149,38 @@ prim_parse(EevoSt st, EevoRec env, Eevo args)
 	return ret;
 }
 
-/* Load C function from library, included dynamically or statically */
+/* Get C function from library, included dynamically or statically. */
+/* Expects the function name to be prefixed with the library name. */
 Eevo
 form_load(EevoSt st, EevoRec env, Eevo args)
 {
+	char lib_name[MAX_IDENTIFIER_LEN] = {0};
 	EevoPrim pr;
 	void *libh;
 	eevo_arg_num(args, "load", 2);
 	eevo_arg_type(fst(args), "load", EEVO_TEXT);
 	eevo_arg_type(snd(args), "load", EEVO_TEXT);
+
 	char *lib = fst(args)->v.s;
 	char *name = snd(args)->v.s;
+	if (strlen(lib)+1+strlen(name)+1 > MAX_IDENTIFIER_LEN)
+		eevo_warn("load: library and name exceed maximum identifier length of host language");
+	strncpy(lib_name, lib, sizeof(lib_name));
+	lib_name[strlen(lib_name)] = '_';
+	strncpy(lib_name+strlen(lib_name), name, sizeof(lib_name)-strlen(lib_name));
 
 	/* First try loading primitive statically */
-	libh = dlopen(NULL, RTLD_LAZY);
-	if ((*(void **)(&pr) = dlsym(libh, lib_name)))
+	if ((*(void **)(&pr) = dlsym(dlopen(NULL, RTLD_LAZY), lib_name)))
 		return eevo_prim(st, EEVO_FORM, pr, name);
 
-	/* Load dynamic library into libh */
+	/* Otherwise, load dynamic library into libh */
 	if (!(libh = dlopen(lib, RTLD_LAZY)))
-		eevo_warnf("load: could not load '%s':\n; %s", lib, dlerror());
-
-	/* Get primitive from library */
+		eevo_warnf("load: could not load '%s' from '%s':\n; %s", lib_name, lib, dlerror());
+	/* Get primitive from dynamic library */
 	dlerror(); /* Clear error */
 	*(void **)(&pr) = dlsym(libh, lib_name);
 	if (dlerror())
-		eevo_warnf("load: could not load '%s' from '%s':\n; %s", name, lib, dlerror());
+		eevo_warnf("load: could not load '%s' from '%s':\n; %s", lib_name, lib, dlerror());
 	return eevo_prim(st, EEVO_FORM, pr, name);
 }
 

@@ -27,7 +27,7 @@
 
 /* Run system command with arguments */
 Eevo
-prim_sys(EevoSt st, EevoRec env, Eevo args)
+std_sys(EevoSt st, EevoRec env, Eevo args)
 {
 	/* Count arguments */
 	int argc = 0;
