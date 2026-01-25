@@ -37,9 +37,9 @@ $(EXE)$(VER).c: eevo.c $(CORE) core.evo.h
 	@sed -i 's/^#include "eevo.h"/#include "$(EXE)$(VER).h"/' $@
 	@sed -i '/^#include "..\/eevo.h"/d' $@
 
-$(EXE)$(VER).h: $(EVO)
+$(EXE)$(VER).h: eevo.h
 	@echo creating $@
-	@cp eevo.h $@
+	@cp $< $@
 
 .o:
 	@echo $(LD) $@
