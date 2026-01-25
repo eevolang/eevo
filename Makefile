@@ -61,7 +61,7 @@ $(EXE): $(EXE)$(VER).h $(EXE)$(VER).o main.o
 
 clean:
 	@echo cleaning
-	@rm -f $(EXE) $(EXE)$(VER).? $(EXE).o main.o $(LIB) test/test test/test.o
+	@rm -f $(EXE) $(EXE)$(VER).? $(EXE).o core.evo.h main.o $(LIB) test/test test/test.o
 
 man: $(MAN)
 
