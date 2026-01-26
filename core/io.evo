@@ -1,3 +1,7 @@
+def write (load eevo write)
+def read  (load eevo open)
+def parse (load eevo parse)
+
 def newline(... file) ; TODO space and tab functions, accept number of instead
   if (or nil?(file) nil?(rst(file)))
     write fst((or file '(stdout))) file "\n"

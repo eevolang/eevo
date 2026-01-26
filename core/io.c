@@ -76,11 +76,12 @@ read_file(char *fname)
 
 /* write all arguemnts to given file, or stdout/stderr, without newline */
 /* first argument is file name, second is option to append file */
-static Eevo
-prim_write(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_write(EevoSt st, EevoRec env, Eevo args)
 {
 	FILE *f;
 	const char *mode = "w";
+	eevo_eval_args(st, env, args);
 	eevo_arg_min(args, "write", 2);
 
 	/* if second argument is true, append file don't write over */
@@ -111,10 +112,11 @@ prim_write(EevoSt st, EevoRec env, Eevo args)
 }
 
 /* return string of given file or read from stdin */
-static Eevo
-prim_read(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_open(EevoSt st, EevoRec env, Eevo args)
 {
 	char *file, *fname = NULL; /* read from stdin by default */
+	eevo_eval_args(st, env, args);
 	eevo_arg_max(args, "read", 1);
 	if (eevo_lstlen(args) == 1) { /* if file name given as string, read it */
 		eevo_arg_type(fst(args), "read", EEVO_STR);
@@ -126,12 +128,13 @@ prim_read(EevoSt st, EevoRec env, Eevo args)
 }
 
 /* parse string as eevo expression, return 'quit if given no arguments */
-static Eevo
-prim_parse(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_parse(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo ret, expr;
 	char *file = st->file;
 	size_t filec = st->filec;
+	eevo_eval_args(st, env, args);
 	eevo_arg_num(args, "parse", 1);
 	expr = fst(args);
 	if (nilp(expr))
@@ -152,7 +155,7 @@ prim_parse(EevoSt st, EevoRec env, Eevo args)
 /* Get C function from library, included dynamically or statically. */
 /* Expects the function name to be prefixed with the library name. */
 Eevo
-form_load(EevoSt st, EevoRec env, Eevo args)
+eevo_load(EevoSt st, EevoRec env, Eevo args)
 {
 	char lib_name[MAX_IDENTIFIER_LEN] = {0};
 	EevoPrim pr;
@@ -161,6 +164,7 @@ form_load(EevoSt st, EevoRec env, Eevo args)
 	eevo_arg_type(fst(args), "load", EEVO_TEXT);
 	eevo_arg_type(snd(args), "load", EEVO_TEXT);
 
+	/* Construst function name with library as prefix */
 	char *lib = fst(args)->v.s;
 	char *name = snd(args)->v.s;
 	if (strlen(lib)+1+strlen(name)+1 > MAX_IDENTIFIER_LEN)
@@ -176,19 +180,10 @@ form_load(EevoSt st, EevoRec env, Eevo args)
 	/* Otherwise, load dynamic library into libh */
 	if (!(libh = dlopen(lib, RTLD_LAZY)))
 		eevo_warnf("load: could not load '%s' from '%s':\n; %s", lib_name, lib, dlerror());
-	/* Get primitive from dynamic library */
 	dlerror(); /* Clear error */
+	/* Get primitive from dynamic library */
 	*(void **)(&pr) = dlsym(libh, lib_name);
 	if (dlerror())
 		eevo_warnf("load: could not load '%s' from '%s':\n; %s", lib_name, lib, dlerror());
 	return eevo_prim(st, EEVO_FORM, pr, name);
-}
-
-void
-eevo_env_io(EevoSt st)
-{
-	eevo_env_prim(write);
-	eevo_env_prim(read);
-	eevo_env_prim(parse);
-	eevo_env_form(load);
 }

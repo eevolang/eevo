@@ -45,9 +45,6 @@ main(void)
 	int errors[LEN(tests)] = {0};
 	clock_t t;
 	EevoSt st = eevo_env_init(1024);
-	eevo_env_core(st);
-	eevo_env_math(st);
-	eevo_env_string(st);
 	eevo_env_lib(st);
 
 	t = clock();

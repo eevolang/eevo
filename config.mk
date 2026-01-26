@@ -5,7 +5,7 @@ VERSION = 0.2.1
 STD    = std/os.c std/sys.c
 STDEVO = std/doc.evo
 CORE   = core/io.c core/core.c core/string.c core/math.c
-EVO    = core/core.evo core/list.evo core/math.evo core/io.evo
+EVO    = core/core.evo core/list.evo core/math.evo core/io.evo core/string.evo
 
 # paths
 PREFIX = /usr/local

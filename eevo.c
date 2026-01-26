@@ -39,6 +39,14 @@ struct Eevo_ eevo_void = { .t = EEVO_VOID };
 static void rec_add(EevoSt st, EevoRec rec, char *key, const Eevo val);
 static Eevo eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args);
 
+Eevo eevo_load(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Dec(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Int(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Str(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Sym(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Func(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Macro(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Pair(EevoSt st, EevoRec env, Eevo args);
 
 /*** Utilities ***/
 
@@ -1095,19 +1103,22 @@ eevo_env_init(size_t cap)
 	eevo_env_add(st, "version", eevo_str(st, "0.2.1"));
 	eevo_env_add(st, "OP_CHARS", eevo_str(st, EEVO_OP_CHARS));
 
+	/* Bootstrap all primitives from load */
+	eevo_env_add(st, "load", eevo_prim(st, EEVO_FORM, eevo_load, "load"));
+
 	/* Types */
 	st->types[0]  = eevo_type(st, EEVO_VOID,  "TVoid", NULL);
 	st->types[1]  = eevo_type(st, EEVO_NIL,   "TNil",  NULL);
-	st->types[2]  = eevo_type(st, EEVO_INT,   "Int",   NULL);
-	st->types[3]  = eevo_type(st, EEVO_DEC,   "Dec",   NULL);
+	st->types[2]  = eevo_type(st, EEVO_INT,   "Int",   eevo_prim(st, EEVO_PRIM, eevo_Int, "Int"));
+	st->types[3]  = eevo_type(st, EEVO_DEC,   "Dec",   eevo_prim(st, EEVO_PRIM, eevo_Dec, "Dec"));
 	st->types[4]  = eevo_type(st, EEVO_RATIO, "Ratio", NULL);
-	st->types[5]  = eevo_type(st, EEVO_STR,   "Str",   NULL);
-	st->types[6]  = eevo_type(st, EEVO_SYM,   "Sym",   NULL);
+	st->types[5]  = eevo_type(st, EEVO_STR,   "Str",   eevo_prim(st, EEVO_PRIM, eevo_Str, "Str"));
+	st->types[6]  = eevo_type(st, EEVO_SYM,   "Sym",   eevo_prim(st, EEVO_PRIM, eevo_Sym, "Sym"));
 	st->types[7]  = eevo_type(st, EEVO_PRIM,  "Prim",  NULL);
 	st->types[8]  = eevo_type(st, EEVO_FORM,  "Form",  NULL);
-	st->types[9]  = eevo_type(st, EEVO_FUNC,  "Func",  NULL);
-	st->types[10] = eevo_type(st, EEVO_MACRO, "Macro", NULL);
-	st->types[11] = eevo_type(st, EEVO_PAIR,  "Pair",  NULL);
+	st->types[9]  = eevo_type(st, EEVO_FUNC,  "Func",  eevo_prim(st, EEVO_FORM, eevo_Func,  "Func"));
+	st->types[10] = eevo_type(st, EEVO_MACRO, "Macro", eevo_prim(st, EEVO_FORM, eevo_Macro, "Macro"));
+	st->types[11] = eevo_type(st, EEVO_PAIR,  "Pair",  eevo_prim(st, EEVO_FORM, eevo_Pair, "Pair"));
 	/* Eevo lst = eevo_sym(st, "lst"); */
 	/* Eevo List = eevo_func(EEVO_FUNC, "List", lst, eevo_list(st, 1, lst), st->env); */
 	/* st->types[11] = eevo_type(st, EEVO_PAIR | EEVO_VOID,  "List",  List); */

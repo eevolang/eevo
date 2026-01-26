@@ -1,3 +1,39 @@
+;;; Imports
+
+def +   (load eevo add)
+def -   (load eevo sub)
+def *   (load eevo mul)
+def /   (load eevo div)
+def ^   (load eevo pow)
+def mod (load eevo mod)
+
+def <  (load eevo lt)
+def >  (load eevo gt)
+def <= (load eevo lte)
+def >= (load eevo gte)
+
+def floor       (load eevo floor)
+def ceil        (load eevo ceil)
+def round       (load eevo round)
+def numerator   (load eevo numerator)
+def denominator (load eevo denominator)
+
+def sin     (load eevo sin)
+def cos     (load eevo cos)
+def tan     (load eevo tan)
+def sinh    (load eevo sinh)
+def cosh    (load eevo cosh)
+def tanh    (load eevo tanh)
+def arcsin  (load eevo asin)
+def arccos  (load eevo acos)
+def arctan  (load eevo atan)
+def arcsinh (load eevo asinh)
+def arccosh (load eevo acosh)
+def arctanh (load eevo atanh)
+
+def exp     (load eevo exp)
+def log     (load eevo log)
+
 ;;; Constants
 
 def pi (* 4 arctan(1.))

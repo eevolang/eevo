@@ -161,11 +161,9 @@ struct EevoSt_ {
 		eevo_warnf(NAME ": expected %s, received %s",                \
 		                eevo_type_str(TYPE), eevo_type_str(ARG->t)); \
 } while(0)
-
-#define eevo_env_name_prim(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(st, EEVO_PRIM, prim_##FN, #NAME))
-#define eevo_env_prim(NAME)          eevo_env_name_prim(NAME, NAME)
-#define eevo_env_name_form(NAME, FN) eevo_env_add(st, #NAME, eevo_prim(st, EEVO_FORM, form_##FN, #NAME))
-#define eevo_env_form(NAME)          eevo_env_name_form(NAME, NAME)
+#define eevo_eval_args(ST, ENV, ARGS)                \
+	if (!(ARGS = eevo_eval_list(ST, ENV, ARGS))) \
+		return NULL
 
 #define eevo_fgetat(ST, O) ST->file[ST->filec+O]
 #define eevo_fget(ST) eevo_fgetat(ST,0)
@@ -221,10 +219,5 @@ EevoSt eevo_env_init(size_t cap);
 Eevo   eevo_env_lib(EevoSt st);
 
 void eevo_free(EevoSt st);
-
-void eevo_env_core(EevoSt);
-void eevo_env_string(EevoSt);
-void eevo_env_math(EevoSt);
-void eevo_env_io(EevoSt);
 
 #endif // EEVO_H

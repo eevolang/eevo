@@ -21,12 +21,6 @@
 #include <assert.h>
 #include <math.h>
 
-#define EVAL_CHECK(A, V, NAME, TYPE) do {  \
-	if (!(A = eevo_eval(st, vars, V))) \
-		return NULL;               \
-	eevo_arg_type(A, NAME, TYPE);      \
-} while(0)
-
 /* wrapper functions to be returned by eevo_num, all need same arguments */
 static Eevo
 create_int(EevoSt st, double num, double den)
@@ -66,14 +60,15 @@ static Eevo
 	return &create_int;
 }
 
-#define PRIM_ROUND(NAME, FORCE)                                        \
-static Eevo                                                            \
-prim_##NAME(EevoSt st, EevoRec vars, Eevo args)                        \
-{                                                                      \
-	Eevo n;                                                        \
-	eevo_arg_num(args, #NAME, 1);                                  \
-	n = fst(args);                                                 \
-	eevo_arg_type(n, #NAME, EEVO_NUM);                             \
+#define PRIM_ROUND(NAME, FORCE)                                            \
+Eevo                                                                       \
+eevo_##NAME(EevoSt st, EevoRec env, Eevo args)                             \
+{                                                                          \
+	Eevo n;                                                            \
+	eevo_arg_num(args, #NAME, 1);                                      \
+	eevo_eval_args(st, env, args);                                     \
+	n = fst(args);                                                     \
+	eevo_arg_type(n, #NAME, EEVO_NUM);                                 \
 	return (eevo_num(n->t, n->t, FORCE))(st, NAME(num(n)/den(n)), 1.); \
 }
 
@@ -88,11 +83,12 @@ PRIM_ROUND(round, 0)
 PRIM_ROUND(floor, 0)
 PRIM_ROUND(ceil,  0)
 
-static Eevo
-prim_add(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_add(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo a, b;
 	eevo_arg_num(args, "+", 2);
+	eevo_eval_args(st, env, args);
 	a = fst(args), b = snd(args);
 	eevo_arg_type(a, "+", EEVO_NUM);
 	eevo_arg_type(b, "+", EEVO_NUM);
@@ -103,13 +99,14 @@ prim_add(EevoSt st, EevoRec vars, Eevo args)
 		     den(a) * den(b));
 }
 
-static Eevo
-prim_sub(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_sub(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo a, b;
 	int len = eevo_lstlen(args);
 	if (len != 2 && len != 1)
 		eevo_warnf("-: expected 1 or 2 arguments, recieved %d", len);
+	eevo_eval_args(st, env, args);
 	a = fst(args);
 	eevo_arg_type(a, "-", EEVO_NUM);
 	if (len == 1) {
@@ -126,11 +123,12 @@ prim_sub(EevoSt st, EevoRec vars, Eevo args)
 		     den(a) * den(b));
 }
 
-static Eevo
-prim_mul(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_mul(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo a, b;
 	eevo_arg_num(args, "*", 2);
+	eevo_eval_args(st, env, args);
 	a = fst(args), b = snd(args);
 	eevo_arg_type(a, "*", EEVO_NUM);
 	eevo_arg_type(b, "*", EEVO_NUM);
@@ -140,13 +138,14 @@ prim_mul(EevoSt st, EevoRec vars, Eevo args)
 
 }
 
-static Eevo
-prim_div(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_div(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo a, b;
 	int len = eevo_lstlen(args);
 	if (len != 2 && len != 1)
 		eevo_warnf("/: expected 1 or 2 arguments, recieved %d", len);
+	eevo_eval_args(st, env, args);
 	a = fst(args);
 	eevo_arg_type(a, "/", EEVO_NUM);
 	if (len == 1) {
@@ -161,11 +160,12 @@ prim_div(EevoSt st, EevoRec vars, Eevo args)
 	return (eevo_num(a->t, b->t, 1))(st, num(a) * den(b), den(a) * num(b));
 }
 
-static Eevo
-prim_mod(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_mod(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo a, b;
 	eevo_arg_num(args, "mod", 2);
+	eevo_eval_args(st, env, args);
 	a = fst(args), b = snd(args);
 	eevo_arg_type(a, "mod", EEVO_INT);
 	eevo_arg_type(b, "mod", EEVO_INT);
@@ -175,12 +175,13 @@ prim_mod(EevoSt st, EevoRec vars, Eevo args)
 }
 
 /* TODO if given function as 2nd arg run it on first arg */
-static Eevo
-prim_pow(EevoSt st, EevoRec vars, Eevo args)
+Eevo
+eevo_pow(EevoSt st, EevoRec env, Eevo args)
 {
 	Eevo b, p;
 	double bnum, bden;
 	eevo_arg_num(args, "pow", 2);
+	eevo_eval_args(st, env, args);
 	b = fst(args), p = snd(args);
 	eevo_arg_type(b, "pow", EEVO_EXPR);
 	eevo_arg_type(p, "pow", EEVO_EXPR);
@@ -193,11 +194,12 @@ prim_pow(EevoSt st, EevoRec vars, Eevo args)
 }
 
 #define PRIM_COMPARE(NAME, OP)                      \
-static Eevo                                         \
-prim_##NAME(EevoSt st, EevoRec vars, Eevo args)     \
+Eevo                                                \
+eevo_##NAME(EevoSt st, EevoRec env, Eevo args)      \
 {                                                   \
 	if (eevo_lstlen(args) != 2)                 \
 		return True;                        \
+	eevo_eval_args(st, env, args);              \
 	eevo_arg_type(fst(args), #OP, EEVO_NUM);    \
 	eevo_arg_type(snd(args), #OP, EEVO_NUM);    \
 	return ((num(fst(args))*den(snd(args)))  OP \
@@ -211,10 +213,11 @@ PRIM_COMPARE(lte, <=)
 PRIM_COMPARE(gte, >=)
 
 #define PRIM_TRIG(NAME)                                          \
-static Eevo                                                      \
-prim_##NAME(EevoSt st, EevoRec vars, Eevo args)                  \
+Eevo                                                             \
+eevo_##NAME(EevoSt st, EevoRec env, Eevo args)                   \
 {                                                                \
 	eevo_arg_num(args, #NAME, 1);                            \
+	eevo_eval_args(st, env, args);                           \
 	eevo_arg_type(fst(args), #NAME, EEVO_EXPR);              \
 	if (fst(args)->t & EEVO_DEC)                             \
 		return eevo_dec(st, NAME(num(fst(args))));       \
@@ -236,57 +239,20 @@ PRIM_TRIG(atanh)
 PRIM_TRIG(exp)
 PRIM_TRIG(log)
 
-static Eevo
-prim_numerator(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_numerator(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "numerator", 1);
+	eevo_eval_args(st, env, args);
 	eevo_arg_type(fst(args), "numerator", EEVO_INT | EEVO_RATIO);
 	return eevo_int(st, fst(args)->v.n.num);
 }
 
-static Eevo
-prim_denominator(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_denominator(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "denominator", 1);
+	eevo_eval_args(st, env, args);
 	eevo_arg_type(fst(args), "denominator", EEVO_INT | EEVO_RATIO);
 	return eevo_int(st, fst(args)->v.n.den);
-}
-
-void
-eevo_env_math(EevoSt st)
-{
-	st->types[2]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Int, "Int");
-	st->types[3]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Dec, "Dec");
-	eevo_env_prim(floor);
-	eevo_env_prim(ceil);
-	eevo_env_prim(round);
-	eevo_env_prim(numerator);
-	eevo_env_prim(denominator);
-
-	eevo_env_name_prim(+, add);
-	eevo_env_name_prim(-, sub);
-	eevo_env_name_prim(*, mul);
-	eevo_env_name_prim(/, div);
-	eevo_env_name_prim(^, pow);
-	eevo_env_prim(mod);
-
-	eevo_env_name_prim(<,  lt);
-	eevo_env_name_prim(>,  gt);
-	eevo_env_name_prim(<=, lte);
-	eevo_env_name_prim(>=, gte);
-
-	eevo_env_prim(sin);
-	eevo_env_prim(cos);
-	eevo_env_prim(tan);
-	eevo_env_prim(sinh);
-	eevo_env_prim(cosh);
-	eevo_env_prim(tanh);
-	eevo_env_name_prim(arcsin,  asin);
-	eevo_env_name_prim(arccos,  acos);
-	eevo_env_name_prim(arctan,  atan);
-	eevo_env_name_prim(arcsinh, asinh);
-	eevo_env_name_prim(arccosh, acosh);
-	eevo_env_name_prim(arctanh, atanh);
-	eevo_env_prim(exp);
-	eevo_env_prim(log);
 }

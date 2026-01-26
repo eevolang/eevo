@@ -24,8 +24,8 @@ typedef Eevo (*MkFn)(EevoSt, char*);
 /* TODO string tib: lower upper capitalize strpos strsub skipto snipto (python: dir(str))*/
 
 /* convert all args to a string */
-static Eevo
-prim_Str(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_Str(EevoSt st, EevoRec env, Eevo args)
 {
 	char *s;
 	if (!(s = eevo_print(args)))
@@ -34,8 +34,8 @@ prim_Str(EevoSt st, EevoRec env, Eevo args)
 }
 
 /* convert all args to a symbol */
-static Eevo
-prim_Sym(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_Sym(EevoSt st, EevoRec env, Eevo args)
 {
 	char *s;
 	if (!(s = eevo_print(args)))
@@ -43,9 +43,10 @@ prim_Sym(EevoSt st, EevoRec env, Eevo args)
 	return eevo_sym(st, s);
 }
 
-static Eevo
-prim_strlen(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_strlen(EevoSt st, EevoRec env, Eevo args)
 {
+	eevo_eval_args(st, env, args);
 	eevo_arg_min(args, "strlen", 1);
 	eevo_arg_type(fst(args), "strlen", EEVO_STR | EEVO_SYM);
 	return eevo_int(st, strlen(fst(args)->v.s));
@@ -53,8 +54,8 @@ prim_strlen(EevoSt st, EevoRec env, Eevo args)
 
 /* perform interpolation on explicit string, evaluating anything inside curly braces */
 /* FIXME nested strings shouldn't need to be escaped*/
-static Eevo
-form_strfmt(EevoSt st, EevoRec env, Eevo args)
+Eevo
+eevo_strfmt(EevoSt st, EevoRec env, Eevo args)
 {
 	char *ret, *str;
 	int ret_len, ret_cap, pos = 0;
@@ -100,13 +101,4 @@ form_strfmt(EevoSt st, EevoRec env, Eevo args)
 		}
 	ret[pos] = '\0';
 	return eevo_str(st, ret);
-}
-
-void
-eevo_env_string(EevoSt st)
-{
-	st->types[5]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Str, "Str");
-	st->types[6]->v.t.func = eevo_prim(st, EEVO_PRIM, prim_Sym, "Sym");
-	eevo_env_prim(strlen);
-	eevo_env_form(strfmt);
 }

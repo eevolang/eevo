@@ -1,4 +1,27 @@
-;;; core.evo
+; ;;; Imports
+
+(load eevo def) def (load eevo def)
+
+def fst   (load eevo fst)
+def rst   (load eevo rst)
+def quote (load eevo quote)
+def eval  (load eevo prim_eval)
+def =     (load eevo eq)
+def cond  (load eevo cond)
+def do    (load eevo eval_body)
+
+def typeof    (load eevo prim_typeof)
+def procprops (load eevo procprops)
+def error     (load eevo error)
+
+def recmerge  (load eevo recmerge)
+def records   (load eevo records)
+def undefine! (load eevo undefine)
+def defined?  (load eevo definedp)
+def in        (load eevo in)
+
+;;; Core
+
 def list(... lst) "Create list" lst
 def quit '~No REPL to quit from~
 
