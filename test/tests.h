@@ -281,7 +281,6 @@ char *tests[][2] = {
 	{ "Type(\"you can not lose if you do not play\")", "Str"   },
 	{ "Type('doodlebob)",                              "Sym"   },
 	{ "Type(fst)",                                     "Prim"  },
-	{ "Type(typeof)",                                  "Prim"  },
 	{ "Type(quote)",                                   "Prim"  },
 	{ "Type(def)",                                     "Prim"  },
 	{ "Type(do0)",                                     "Func"  },

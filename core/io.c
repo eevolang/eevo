@@ -154,6 +154,7 @@ eevo_parse(EevoSt st, EevoRec env, Eevo args)
 
 /* Get C function from library, included dynamically or statically. */
 /* Expects the function name to be prefixed with the library name. */
+/* FIX name of prim should be defined name not C name */
 Eevo
 eevo_load(EevoSt st, EevoRec env, Eevo args)
 {

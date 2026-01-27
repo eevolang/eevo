@@ -47,20 +47,9 @@ Eevo eevo_Sym(EevoSt st, EevoRec env, Eevo args);
 Eevo eevo_Func(EevoSt st, EevoRec env, Eevo args);
 Eevo eevo_Macro(EevoSt st, EevoRec env, Eevo args);
 Eevo eevo_Pair(EevoSt st, EevoRec env, Eevo args);
+Eevo eevo_Type(EevoSt st, EevoRec env, Eevo args);
 
 /*** Utilities ***/
-
-/* return type of eevo value */
-static Eevo
-eevo_typeof(EevoSt st, EevoRec env, Eevo args)
-{
-	eevo_arg_num(args, "Type", 1);
-	eevo_eval_args(st, env, args);
-	int id = 0;
-	for (int i = fst(args)->t; i > 1; i = i >> 1)
-		id++;
-	return st->types[id];
-}
 
 /* return named string for each type */
 /* TODO loop through each type bit to print */
@@ -1115,8 +1104,8 @@ eevo_env_init(size_t cap)
 	/* Eevo lst = eevo_sym(st, "lst"); */
 	/* Eevo List = eevo_func(EEVO_FUNC, "List", lst, eevo_list(st, 1, lst), st->env); */
 	/* st->types[11] = eevo_type(st, EEVO_PAIR | EEVO_VOID,  "List",  List); */
-	st->types[11] = eevo_type(st, EEVO_REC,   "Rec",    eevo_prim(st, eevo_rec,    "Rec"));
-	st->types[12] = eevo_type(st, EEVO_TYPE,  "Type",   eevo_prim(st, eevo_typeof, "Type"));
+	st->types[11] = eevo_type(st, EEVO_REC,   "Rec",   eevo_prim(st, eevo_rec,  "Rec"));
+	st->types[12] = eevo_type(st, EEVO_TYPE,  "Type",  eevo_prim(st, eevo_Type, "Type"));
 	for (int i = 0; i < LEN(st->types); i++)
 		eevo_env_add(st, st->types[i]->v.t.name, st->types[i]);
 		/* TODO define type predicate functions here (nil?, string?, etc) */

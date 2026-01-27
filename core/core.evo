@@ -10,7 +10,6 @@ def =     (load eevo eq)
 def cond  (load eevo cond)
 def do    (load eevo eval_body)
 
-def typeof    (load eevo prim_typeof)
 def procprops (load eevo procprops)
 def error     (load eevo error)
 

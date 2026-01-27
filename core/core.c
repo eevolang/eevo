@@ -94,13 +94,15 @@ eevo_cond(EevoSt st, EevoRec env, Eevo args)
 }
 
 /* return type of eevo value */
-/* TODO merge with eevo_typeof / eevo_type */
 Eevo
-eevo_prim_typeof(EevoSt st, EevoRec env, Eevo args)
+eevo_Type(EevoSt st, EevoRec env, Eevo args)
 {
+	eevo_arg_num(args, "Type", 1);
 	eevo_eval_args(st, env, args);
-	eevo_arg_num(args, "typeof", 1);
-	return eevo_str(st, eevo_type_str(fst(args)->t));
+	int id = 0;
+	for (int i = fst(args)->t; i > 1; i = i >> 1)
+		id++;
+	return st->types[id];
 }
 
 /* return record of properties for given procedure */
