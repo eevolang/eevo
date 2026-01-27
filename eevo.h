@@ -64,19 +64,18 @@ typedef enum {
 	EEVO_RATIO = 1 << 4,  /* ratio: numerator/denominator */
 	EEVO_STR   = 1 << 5,  /* string: immutable characters */
 	EEVO_SYM   = 1 << 6,  /* symbol: variable names */
-	EEVO_PRIM  = 1 << 7,  /* primitive: built-in function */
-	EEVO_FORM  = 1 << 8,  /* special form: built-in macro */
-	EEVO_FUNC  = 1 << 9,  /* function: procedure written is eevo */
-	EEVO_MACRO = 1 << 10, /* macro: function without evaluated arguments */
-	EEVO_PAIR  = 1 << 11, /* pair: building block for lists */
-	EEVO_REC   = 1 << 12, /* record: hash table */
-	EEVO_TYPE  = 1 << 13, /* type: kind of eevo value */
+	EEVO_PRIM  = 1 << 7,  /* primitive: built-in function from host */
+	EEVO_FUNC  = 1 << 8,  /* function: procedure written is eevo */
+	EEVO_MACRO = 1 << 9,  /* macro: function without evaluated arguments */
+	EEVO_PAIR  = 1 << 10, /* pair: building block for lists */
+	EEVO_REC   = 1 << 11, /* record: hash table */
+	EEVO_TYPE  = 1 << 12, /* type: kind of eevo value */
 	EEVO_RATIONAL = EEVO_INT | EEVO_RATIO,
 	EEVO_NUM      = EEVO_RATIONAL | EEVO_DEC,
 	/* TODO rename to expr type to math ? */
 	EEVO_EXPR     = EEVO_NUM | EEVO_SYM | EEVO_PAIR,
 	EEVO_TEXT     = EEVO_STR | EEVO_SYM,
-	EEVO_PROC     = EEVO_FUNC | EEVO_PRIM | EEVO_MACRO | EEVO_FORM,
+	EEVO_PROC     = EEVO_FUNC | EEVO_PRIM | EEVO_MACRO,
 	EEVO_LIT      = EEVO_VOID | EEVO_NIL | EEVO_NUM | EEVO_STR | EEVO_PROC,
 	EEVO_LIST     = EEVO_PAIR | EEVO_NIL,
 	EEVO_CALLABLE = EEVO_PROC | EEVO_REC | EEVO_TYPE, // | EEVO_PAIR
@@ -99,7 +98,7 @@ struct Eevo_ {
 	union {
 		char *s;                                                /* STRING, SYMBOL */
 		struct { double num, den; } n;                          /* NUMBER */
-		struct { char *name; EevoPrim pr; } pr;                 /* PRIMITIVE, FORM */
+		struct { char *name; EevoPrim pr; } pr;                 /* PRIMITIVE */
 		struct { char *name; Eevo args, body; EevoRec env; } f; /* FUNCTION, MACRO */
 		struct { Eevo fst, rst; } p;                            /* PAIR */
 		EevoRec r;                                              /* REC */
@@ -125,7 +124,7 @@ struct EevoSt_ {
 	EevoArena mem;
 	char *file;
 	size_t filec;
-	Eevo types[14];
+	Eevo types[13];
 	EevoRec env, strs, syms;
 };
 
@@ -199,7 +198,7 @@ Eevo  eevo_dec(EevoSt st, double d);
 Eevo  eevo_rat(EevoSt st, int num, int den);
 Eevo  eevo_str(EevoSt st, char *s);
 Eevo  eevo_sym(EevoSt st, char *s);
-Eevo eevo_prim(EevoSt st, EevoType t, EevoPrim prim, char *name);
+Eevo eevo_prim(EevoSt st, EevoPrim prim, char *name);
 Eevo eevo_func(EevoSt st, EevoType t, char *name, Eevo args, Eevo body, EevoRec env);
 Eevo  eevo_rec(EevoSt st, EevoRec prev, const Eevo records);
 Eevo eevo_pair(EevoSt st, Eevo a, Eevo b);

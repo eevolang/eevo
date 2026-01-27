@@ -168,17 +168,6 @@ returning `55`.
 
 **Examples:** `list`, `not`, `apply`, `map`, `sqrt`, `println`
 
-#### Primitives
-
-Functions written in an external language other than eevo, such as the ones
-built-in to the language written in C.
-They behave like normal functions but are opaque, their implementation cannot
-be inspected within the language.
-
-See built-ins section for more examples.
-
-**Examples:** `fst`, `write`, `+`
-
 #### Macros
 
 Functions that operate at the syntax level, accepting code as input and return
@@ -191,18 +180,21 @@ custom languages for specific tasks, or directly transform source code.
 
 **Examples:** `if`, `and`, `or`, `let`
 
-#### Forms
+#### Primitives
 
-Macros written in an external language; like macros, their arguments
-are not necessarily evaluated, and like primitives, their internals cannot be
-inspected.
+Procedures written in external languages like C, instead of eevo.
+While they behave similar to functions,
+they are opaque and their implementation cannot be inspected within eevo itself.
+Like macros, however, their arguments are not necessarily evaluated.
 
-**Examples:** `cond`, `def`, `quote`
+See procedures section for more examples.
+
+**Examples:** `fst`, `write`, `+`, `cond`, `def`, `quote`
 
 ## Procedures
 
 Procedures are the verbs of eevo, they describe how expressions change.
-Procedures can be either functions, macros, primitives, or forms.
+Procedures can be either functions, macros, or primitives.
 
 *Convention*: Procedures which return a boolean type should end with `?` (**eg**
 `pair?`, `integer?`, `even?`), procedures with side-effects should end with `!`

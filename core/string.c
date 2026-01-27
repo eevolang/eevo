@@ -28,6 +28,7 @@ Eevo
 eevo_Str(EevoSt st, EevoRec env, Eevo args)
 {
 	char *s;
+	eevo_eval_args(st, env, args);
 	if (!(s = eevo_print(args)))
 		return NULL;
 	return eevo_str(st, s);
@@ -38,6 +39,7 @@ Eevo
 eevo_Sym(EevoSt st, EevoRec env, Eevo args)
 {
 	char *s;
+	eevo_eval_args(st, env, args);
 	if (!(s = eevo_print(args)))
 		return NULL;
 	return eevo_sym(st, s);

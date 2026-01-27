@@ -175,7 +175,7 @@ eevo_load(EevoSt st, EevoRec env, Eevo args)
 
 	/* First try loading primitive statically */
 	if ((*(void **)(&pr) = dlsym(dlopen(NULL, RTLD_LAZY), lib_name)))
-		return eevo_prim(st, EEVO_FORM, pr, name);
+		return eevo_prim(st, pr, name);
 
 	/* Otherwise, load dynamic library into libh */
 	if (!(libh = dlopen(lib, RTLD_LAZY)))
@@ -185,5 +185,5 @@ eevo_load(EevoSt st, EevoRec env, Eevo args)
 	*(void **)(&pr) = dlsym(libh, lib_name);
 	if (dlerror())
 		eevo_warnf("load: could not load '%s' from '%s':\n; %s", lib_name, lib, dlerror());
-	return eevo_prim(st, EEVO_FORM, pr, name);
+	return eevo_prim(st, pr, name);
 }

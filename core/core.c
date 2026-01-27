@@ -112,7 +112,6 @@ eevo_procprops(EevoSt st, EevoRec env, Eevo args)
 	Eevo proc = fst(args);
 	EevoRec ret = rec_new(st, 6, NULL); /* TODO mv eevo_rec here */
 	switch (proc->t) {
-	case EEVO_FORM:
 	case EEVO_PRIM:
 		rec_add(st, ret, "name", eevo_sym(st, proc->v.pr.name));
 		break;
@@ -231,10 +230,11 @@ eevo_def(EevoSt st, EevoRec env, Eevo args)
 	} else eevo_warn("def: incorrect format, no variable name found");
 	if (!val)
 		return NULL;
-	/* set procedure name if it was previously anonymous */
+	/* Set procedure name if it was previously anonymous */
 	if (val->t & (EEVO_FUNC|EEVO_MACRO) && !val->v.f.name)
 		val->v.f.name = sym->v.s; /* TODO some bug here */
-	else if (val->t == EEVO_FORM)
+	/* Overwrite primitive's external host name with internal eevo name (eg eq vs =) */
+	else if (val->t == EEVO_PRIM)
 		val->v.pr.name = sym->v.s;
 	rec_add(st, env, sym->v.s, val);
 	return Void;
@@ -301,7 +301,6 @@ eevo_in(EevoSt st, EevoRec env, Eevo args)
 		}
 		return Nil;
 	case EEVO_PRIM:
-	case EEVO_FORM:
 	case EEVO_FUNC:
 	case EEVO_MACRO:
 		/* TODO: if key is valid input */

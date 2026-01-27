@@ -153,16 +153,6 @@ Typically, the input value is a list of arguments. For example, the expression '
 \fBExamples:\fP 'list', 'not', 'apply', 'map', 'sqrt', 'println'
 .PP
 .TP
-\fBPrimitives\fP
-Functions written in an external language other than eevo, such as the ones built-in to the language written in C. They behave like normal functions but are opaque, their implementation cannot be inspected within the language.
-.PP
-.IP
-See built-ins section for more examples.
-.PP
-.IP
-\fBExamples:\fP 'fst', 'write', '+'
-.PP
-.TP
 \fBMacros\fP
 Functions that operate at the syntax level, accepting code as input and return code as output. Unlike functions they receive their arguments unevaluated, and return code that gets evaluated in the context the macro is called in.
 .PP
@@ -173,15 +163,18 @@ This enables eevo to extend its own syntax, eliminate repetition, construct cust
 \fBExamples:\fP 'if', 'and', 'or', 'let'
 .PP
 .TP
-\fBForms\fP
-Macros written in an external language; like macros, their arguments are not necessarily evaluated, and like primitives, their internals cannot be inspected.
+\fBPrimitives\fP
+Procedures written in external languages like C, instead of eevo. While they behave similar to functions, they are opaque and their implementation cannot be inspected within eevo itself. Like macros, however, their arguments are not necessarily evaluated.
 .PP
 .IP
-\fBExamples:\fP 'cond', 'def', 'quote'
+See procedures section for more examples.
+.PP
+.IP
+\fBExamples:\fP 'fst', 'write', '+', 'cond', 'def', 'quote'
 .PP
 .SH PROCEDURES
 .PP
-Procedures are the verbs of eevo, they describe how expressions change. Procedures can be either functions, macros, primitives, or forms.
+Procedures are the verbs of eevo, they describe how expressions change. Procedures can be either functions, macros, or primitives.
 .PP
 .PP
 \fIConvention\fP: Procedures which return a boolean type should end with '?' (\fBeg\fP 'pair?', 'integer?', 'even?'), procedures with side-effects should end with '!' (\fBeg\fP 'cd!', 'exit!').

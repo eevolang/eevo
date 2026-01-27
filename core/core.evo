@@ -1,4 +1,4 @@
-; ;;; Imports
+;;; Imports
 
 (load eevo def) def (load eevo def)
 
@@ -63,7 +63,6 @@ def ratio?(x)       (= Type(x) Ratio)
 def string?(x)      (= Type(x) Str)
 def symbol?(x)      (= Type(x) Sym)
 def primitive?(x)   (= Type(x) Prim)
-def specialform?(x) (= Type(x) Form)
 def function?(x)    (= Type(x) Func)
 def macro?(x)       (= Type(x) Macro)
 def record?(x)      (= Type(x) Rec)
@@ -73,8 +72,7 @@ def list?(x)        (if pair?(x) list?(rst(x)) not(x))
 def boolean?(x)     (or (= x True) nil?(x))
 def true?(x)        (= x True)
 def false?          nil?
-def builtin?(x)     (or primitive?(x) specialform?(x))
-def procedure?(x)   (or builtin?(x) (or function?(x) macro?(x)))
+def procedure?(x)   (or primitive?(x) (or function?(x) macro?(x)))
 def rational?(x)    (or integer?(x) ratio?(x))
 def number?(x)      (or rational?(x) decimal?(x))
 def op?(x)          (and symbol?(x) (in x OP_CHARS))

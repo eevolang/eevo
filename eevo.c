@@ -52,9 +52,10 @@ Eevo eevo_Pair(EevoSt st, EevoRec env, Eevo args);
 
 /* return type of eevo value */
 static Eevo
-eevo_typeof(const EevoSt st, const EevoRec env, const Eevo args)
+eevo_typeof(EevoSt st, EevoRec env, Eevo args)
 {
 	eevo_arg_num(args, "Type", 1);
+	eevo_eval_args(st, env, args);
 	int id = 0;
 	for (int i = fst(args)->t; i > 1; i = i >> 1)
 		id++;
@@ -75,7 +76,6 @@ eevo_type_str(EevoType t)
 	case EEVO_STR:   return "Str";
 	case EEVO_SYM:   return "Sym";
 	case EEVO_PRIM:  return "Prim";
-	case EEVO_FORM:  return "Form";
 	case EEVO_FUNC:  return "Func";
 	case EEVO_MACRO: return "Macro";
 	case EEVO_PAIR:  return "Pair";
@@ -426,9 +426,9 @@ eevo_sym(EevoSt st, char *s)
 }
 
 Eevo
-eevo_prim(EevoSt st, EevoType t, EevoPrim pr, char *name)
+eevo_prim(EevoSt st, EevoPrim pr, char *name)
 {
-	Eevo ret = eevo_val(st, t);
+	Eevo ret = eevo_val(st, EEVO_PRIM);
 	ret->v.pr.name = name;
 	ret->v.pr.pr = pr;
 	return ret;
@@ -891,10 +891,6 @@ eval_proc(EevoSt st, EevoRec env, Eevo f, Eevo args)
 	/* evaluate function and primitive arguments before being passed */
 	switch (f->t) {
 	case EEVO_PRIM:
-		if (!(args = eevo_eval_list(st, env, args)))
-			return NULL;
-		/* FALLTHROUGH */
-	case EEVO_FORM:
 		return (*f->v.pr.pr)(st, env, args);
 	case EEVO_FUNC:
 		if (!(args = eevo_eval_list(st, env, args)))
@@ -969,8 +965,7 @@ print_size(const Eevo v)
 	case EEVO_MACRO:
 		if (!v->v.f.name) return 5; /* anon */
 		return strlen(v->v.f.name) + 1;
-	case EEVO_PRIM:
-	case EEVO_FORM: return strlen(v->v.pr.name);
+	case EEVO_PRIM: return strlen(v->v.pr.name);
 	case EEVO_TYPE: return strlen(v->v.t.name);
 	case EEVO_REC:
 		for (EevoRec r = v->v.r; r; r = r->next)
@@ -1042,7 +1037,6 @@ eevo_print(const Eevo v)
 		strcat(ret, v->v.f.name);
 		break;
 	case EEVO_PRIM:
-	case EEVO_FORM:
 		strcat(ret, v->v.pr.name);
 		break;
 	case EEVO_TYPE:
@@ -1104,28 +1098,25 @@ eevo_env_init(size_t cap)
 	eevo_env_add(st, "OP_CHARS", eevo_str(st, EEVO_OP_CHARS));
 
 	/* Bootstrap all primitives from load */
-	eevo_env_add(st, "load", eevo_prim(st, EEVO_FORM, eevo_load, "load"));
+	eevo_env_add(st, "load", eevo_prim(st, eevo_load, "load"));
 
 	/* Types */
 	st->types[0]  = eevo_type(st, EEVO_VOID,  "TVoid", NULL);
 	st->types[1]  = eevo_type(st, EEVO_NIL,   "TNil",  NULL);
-	st->types[2]  = eevo_type(st, EEVO_INT,   "Int",   eevo_prim(st, EEVO_PRIM, eevo_Int, "Int"));
-	st->types[3]  = eevo_type(st, EEVO_DEC,   "Dec",   eevo_prim(st, EEVO_PRIM, eevo_Dec, "Dec"));
+	st->types[2]  = eevo_type(st, EEVO_INT,   "Int",   eevo_prim(st, eevo_Int, "Int"));
+	st->types[3]  = eevo_type(st, EEVO_DEC,   "Dec",   eevo_prim(st, eevo_Dec, "Dec"));
 	st->types[4]  = eevo_type(st, EEVO_RATIO, "Ratio", NULL);
-	st->types[5]  = eevo_type(st, EEVO_STR,   "Str",   eevo_prim(st, EEVO_PRIM, eevo_Str, "Str"));
-	st->types[6]  = eevo_type(st, EEVO_SYM,   "Sym",   eevo_prim(st, EEVO_PRIM, eevo_Sym, "Sym"));
+	st->types[5]  = eevo_type(st, EEVO_STR,   "Str",   eevo_prim(st, eevo_Str, "Str"));
+	st->types[6]  = eevo_type(st, EEVO_SYM,   "Sym",   eevo_prim(st, eevo_Sym, "Sym"));
 	st->types[7]  = eevo_type(st, EEVO_PRIM,  "Prim",  NULL);
-	st->types[8]  = eevo_type(st, EEVO_FORM,  "Form",  NULL);
-	st->types[9]  = eevo_type(st, EEVO_FUNC,  "Func",  eevo_prim(st, EEVO_FORM, eevo_Func,  "Func"));
-	st->types[10] = eevo_type(st, EEVO_MACRO, "Macro", eevo_prim(st, EEVO_FORM, eevo_Macro, "Macro"));
-	st->types[11] = eevo_type(st, EEVO_PAIR,  "Pair",  eevo_prim(st, EEVO_FORM, eevo_Pair, "Pair"));
+	st->types[8]  = eevo_type(st, EEVO_FUNC,  "Func",  eevo_prim(st, eevo_Func,  "Func"));
+	st->types[9]  = eevo_type(st, EEVO_MACRO, "Macro", eevo_prim(st, eevo_Macro, "Macro"));
+	st->types[10] = eevo_type(st, EEVO_PAIR,  "Pair",  eevo_prim(st, eevo_Pair,  "Pair"));
 	/* Eevo lst = eevo_sym(st, "lst"); */
 	/* Eevo List = eevo_func(EEVO_FUNC, "List", lst, eevo_list(st, 1, lst), st->env); */
 	/* st->types[11] = eevo_type(st, EEVO_PAIR | EEVO_VOID,  "List",  List); */
-	st->types[12] = eevo_type(st, EEVO_REC, "Rec",
-	                          eevo_prim(st, EEVO_FORM, eevo_rec,    "Rec"));
-	st->types[13] = eevo_type(st, EEVO_TYPE, "Type",
-	                          eevo_prim(st, EEVO_PRIM, eevo_typeof, "Type"));
+	st->types[11] = eevo_type(st, EEVO_REC,   "Rec",    eevo_prim(st, eevo_rec,    "Rec"));
+	st->types[12] = eevo_type(st, EEVO_TYPE,  "Type",   eevo_prim(st, eevo_typeof, "Type"));
 	for (int i = 0; i < LEN(st->types); i++)
 		eevo_env_add(st, st->types[i]->v.t.name, st->types[i]);
 		/* TODO define type predicate functions here (nil?, string?, etc) */

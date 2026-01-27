@@ -83,17 +83,15 @@ Both methods can be done at the same time with different languages,
   - Booleans: `True`, `Nil`.
   - Text: strings `Str`, symbols (identifiers/variables) `Sym`.
   - Lists, pairs `Pair`,
-  - [Code expressions][sexpr].
+    - [Code expressions][sexpr].
   - Records: `Rec` (hash tables/maps),
     - Look up tables, accept key and return corresponding value.
     - Unordered set of key value pairs.
     - [Environments][env] (namespaces/modules/capabilities).
-  - Functions: with closures `Func`,
-    - `Func` for [anonymous functions][anon]
-    - `Prim` for external functions written in host language
-  - Macros:
-    - `Macro` functions which transform code.
-    - `Form` special forms which might not ovulate all their arguments. Written in host language.
+  - Procedures: with closures,
+    - `Func`: [anonymous functions][anon].
+    - `Macro`: functions which transform code.
+    - `Prim`: external functions written in host language.
   - Types
   - `Void`
   - Errors
