@@ -73,6 +73,12 @@ doc/man/%.5: doc/%.5.md $(EXE)
 	@echo updating man page $@
 	@markman $(MANOPTS) -5 $< > $@
 
+### Web Assembly
+
+include wasm/wasm.mk
+
+### Distribute
+
 dist: $(EXE)$(VER).h $(EXE)$(VER).c
 	@echo creating dist tarball
 	@tar -cf $(EXE)-$(VERSION).tar $^
@@ -111,6 +117,8 @@ uninstall:
 	@rm -rf $(DESTDIR)$(PREFIX)/lib/eevo/
 	@echo removing eevo libraries from $(DESTDIR)$(PREFIX)/share/eevo
 	@rm -rf $(DESTDIR)$(PREFIX)/share/eevo/
+
+### Test
 
 test/test.o: test/tests.h
 
