@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: eevo scripting language
+abstract: >-
+  eevo is a lightweight yet expressive, high-level scripting language for functional programming.
+  An experiment to see how simple a pratical programming language can be.
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Edryd
+    family-names: van Bruggen
+    email: ed@edryd.org
+identifiers:
+  - type: url
+    value: 'https://eevo.pub'
+    description: Home page
+  - type: url
+    value: 'https://codeberg.org/eevo/eevo'
+    description: Source repository
