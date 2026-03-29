@@ -27,10 +27,16 @@
 
 /*** Configuration ***/
 
+#ifndef EEVO_OP_CHARS
 #define EEVO_OP_CHARS "_+-*/\\|=^<>.:"
+#endif
+#ifndef EEVO_SYM_CHARS
 #define EEVO_SYM_CHARS "_!?" "@#$%&~" "*-"
+#endif
 
+#ifndef EEVO_REC_FACTOR
 #define EEVO_REC_FACTOR 2
+#endif
 
 /*** Global Literals ***/
 
