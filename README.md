@@ -1,18 +1,10 @@
-# eevo
+# eevo script
 
-<p align="center">
-
-[Home](https://eevo.pub)
-[Try](https://eevo.pub/try)
-[Get](https://eevo.pub/get)
-[Tour](https://eevo.pub/tour)
-[Features](https://eevo.pub/#features)
-[Learn](https://eevo.pub/learn)
-
-</p>
+<p align="center"><a href="https://eevo.pub">Home</a> | <a href="https://eevo.pub/try">Try</a> | <a href="https://eevo.pub/get">Get</a> | <a href="https://eevo.pub/tour">Tour</a> | <a href="https://eevo.pub/#features">Features</a> | <a href="https://eevo.pub/learn">Learn</a></p>
 
 **eevo is a simple yet expressive high-level functional scripting language,
 an experiment in how simple a practical programming language can be.**
+
 A general-purpose language in the Lisp family,
 ideal for scripting, acting as an interactive shell, data/configuration files, or a scientific
 calculator.
