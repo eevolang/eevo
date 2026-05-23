@@ -42,6 +42,7 @@ fib 25  ; = 46368
 ## Interpreter
 
 eevo provides a command line interpreter by default, found in [`main.c`][main].
+
 [main]: https://codeberg.org/eevo/eevo/src/branch/main/main.c
 
 - Dependencies:
