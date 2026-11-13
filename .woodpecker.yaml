@@ -1,0 +1,9 @@
+steps:
+  test:
+    image: alpine
+    when:
+      - event: [push, pull_request]
+        branch: main
+    commands:
+      - apk add --no-cache build-base gcc >/dev/null
+      - make test
