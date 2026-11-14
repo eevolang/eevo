@@ -5,5 +5,5 @@ steps:
       - event: [push, pull_request]
         branch: main
     commands:
-      - apk add --no-cache build-base gcc >/dev/null
-      - make test
+      - apk add --no-cache build-base gcc xxd >/dev/null
+      - make clean test
