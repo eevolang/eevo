@@ -15,8 +15,6 @@ MAN = $(DOC:doc/%.md=doc/man/%)
 
 # markman options for converting markdown to man pages
 MANOPTS = -nCD -t EEVO -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`"
-# VERSION without patch eg 1.2.3 -> 1.2
-VER=$(shell cut -d '.' -f 1,2 <<< $(VERSION))
 
 all: options $(EXE) $(LIB)
 

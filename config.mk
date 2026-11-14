@@ -1,5 +1,6 @@
 # eevo version number
 VERSION = 0.2.1
+VER = 0.2
 
 # core modules and standard library to include
 STD    = std/os.c std/sys.c
