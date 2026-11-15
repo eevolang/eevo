@@ -1,10 +1,28 @@
+<div align="center">
+
 # eevo script
 
-<p align="center"><a href="https://eevo.pub">Home</a> | <a href="https://eevo.pub/try">Try</a> | <a href="https://eevo.pub/get">Get</a> | <a href="https://eevo.pub/tour">Tour</a> | <a href="https://eevo.pub/#features">Features</a> | <a href="https://eevo.pub/learn">Learn</a></p>
+[Home](https://eevo.pub) |
+[Try](https://eevo.pub/try) |
+[Get](https://eevo.pub/get) |
+[Tour](https://eevo.pub/tour) |
+[Features](https://eevo.pub/#features) |
+[Learn](https://eevo.pub/learn) |
+[Read](https://eevo.pub/read)
 
-**eevo is a simple yet expressive high-level functional scripting language,
-an experiment in how simple a practical programming language can be.**
+Experiment in how simple a practical programming language can be
 
+[![latest release](https://img.shields.io/gitea/v/release/eevo/eevo?gitea_url=https://codeberg.org)](https://codeberg.org/eevo/eevo/releases)
+[![zlib license](https://img.shields.io/badge/license-zlib-green)](https://codeberg.org/eevo/eevo/src/branch/main/LICENSE)
+[![pipeline status](https://ci.codeberg.org/api/badges/17436/status.svg)](https://ci.codeberg.org/repos/17436)
+![coverage 77%](https://img.shields.io/badge/coverage-77%25-yellow)
+[![open issues](https://img.shields.io/gitea/issues/open/eevo/eevo?gitea_url=https://codeberg.org)](https://codeberg.org/eevo/eevo/issues)
+[![dependencies 1](https://img.shields.io/badge/dependencies-1-blue)](https://musl.libc.org/)
+[![size 92KB](https://img.shields.io/badge/size-92KB-blue)](https://fitsonafloppy.com)
+
+</div>
+
+**eevo is a lightweight yet expressive high-level functional scripting language.**
 A general-purpose language in the Lisp family,
 ideal for scripting, acting as an interactive shell, data/configuration files, or a scientific
 calculator.
