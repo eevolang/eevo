@@ -116,6 +116,15 @@ Commit messages should follow [these general guidelines][commit].
 
 [commit]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 
+## Human Only Policy
+
+Programming is a fundamentally human activity,
+otherwise we would all be writing machine code.
+We do no accept legally significant output of large language models (LLMs),
+in code or in prose.
+Personal usage of LLMs as a tool for searching, summarizing, or debugging,
+is permitted at your own discretion.
+
 # License
 
 Zlib © Edryd van Bruggen
